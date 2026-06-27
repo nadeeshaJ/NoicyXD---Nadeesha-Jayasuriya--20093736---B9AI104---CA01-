@@ -1,0 +1,7 @@
+{
+  "dataset": "ESC-50 Animals",
+  "train_clips": 140,
+  "val_clips": 30,
+  "test_clips": 30,
+  "split_ratio": "70/15/15 stratified"
+}

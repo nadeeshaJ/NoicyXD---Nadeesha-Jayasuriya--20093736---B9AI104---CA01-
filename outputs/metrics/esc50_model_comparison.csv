@@ -1,0 +1,4 @@
+approach,run_name,domain,accuracy,macro_f1,weighted_f1
+Urban transfer (MobileNetV2),mobilenetv2_urbansound_transfer,ESC-50 Animals,0.5666666666666667,0.516031746031746,0.5456613756613756
+From scratch (Custom CNN),custom_cnn_from_scratch,ESC-50 Animals,0.5666666666666667,0.5127272727272727,0.536969696969697
+ImageNet only (MobileNetV2),mobilenetv2_imagenet_only,ESC-50 Animals,0.6,0.6068253968253968,0.6131746031746032

@@ -1,0 +1,62 @@
+{
+  "validation": [
+    {
+      "dataset": "urbansound8k",
+      "splits": {
+        "train": {
+          "total": 7105,
+          "processed": 7105,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "val": {
+          "total": 790,
+          "processed": 790,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "test": {
+          "total": 837,
+          "processed": 837,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        }
+      }
+    },
+    {
+      "dataset": "esc50_animals",
+      "splits": {
+        "train": {
+          "total": 140,
+          "processed": 140,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "val": {
+          "total": 30,
+          "processed": 30,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "test": {
+          "total": 30,
+          "processed": 30,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        }
+      }
+    }
+  ]
+}

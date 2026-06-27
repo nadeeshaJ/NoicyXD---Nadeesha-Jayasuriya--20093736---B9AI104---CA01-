@@ -1,0 +1,7 @@
+dataset,split,total,processed,skipped,errors,bad_shape_or_missing,unique_labels
+urbansound8k,train,7105,7105,0,0,0,10
+urbansound8k,val,790,790,0,0,0,10
+urbansound8k,test,837,837,0,0,0,10
+esc50_animals,train,140,140,0,0,0,10
+esc50_animals,val,30,30,0,0,0,10
+esc50_animals,test,30,30,0,0,0,10

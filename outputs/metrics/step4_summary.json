@@ -1,0 +1,540 @@
+{
+  "step": 4,
+  "title": "ESC-50 Transfer Learning and Cross-Domain Analysis",
+  "urban_source_model": "mobilenetv2",
+  "urban_source_macro_f1": 0.8310015598940783,
+  "esc50_runs": [
+    {
+      "model_name": "mobilenetv2",
+      "run_name": "mobilenetv2_urbansound_transfer",
+      "dataset": "esc50_animals",
+      "device": "cuda",
+      "backbone_checkpoint": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\experiments\\urbansound8k\\mobilenetv2\\best_model.pt",
+      "trainable_parameters": 1538890,
+      "total_epochs_run": 20,
+      "best_val_loss": 1.5532245635986328,
+      "train_time_sec": 35.5,
+      "test_metrics": {
+        "accuracy": 0.5666666666666667,
+        "macro_f1": 0.516031746031746,
+        "weighted_f1": 0.5456613756613756
+      },
+      "phases": [
+        {
+          "phase": "head_only",
+          "epochs": 3
+        }
+      ],
+      "history": {
+        "train_loss": [
+          2.4114053998674665,
+          2.3620209217071535,
+          2.295770468030657,
+          2.2266568524496897,
+          2.129779475075858,
+          2.0235169853482926,
+          1.9936801774161204,
+          1.8973485129220145,
+          1.810336136817932,
+          1.7666705404009138,
+          1.6632151705878122,
+          1.6082411084856305,
+          1.5701190982546125,
+          1.4679636716842652,
+          1.4251056228365218,
+          1.3148075546537126,
+          1.3022843939917428,
+          1.2259928396769932,
+          1.175867029598781,
+          1.1352479662214006
+        ],
+        "val_loss": [
+          2.3613550662994385,
+          2.3087899684906006,
+          2.2706525325775146,
+          2.214343309402466,
+          2.152674913406372,
+          2.105485677719116,
+          2.0549888610839844,
+          2.0174434185028076,
+          1.9695225954055786,
+          1.9256625175476074,
+          1.8813499212265015,
+          1.8408983945846558,
+          1.803377389907837,
+          1.7619391679763794,
+          1.7343204021453857,
+          1.6961177587509155,
+          1.6581859588623047,
+          1.618361234664917,
+          1.5850335359573364,
+          1.5532245635986328
+        ],
+        "train_acc": [
+          0.12142857142857143,
+          0.11428571428571428,
+          0.1357142857142857,
+          0.20714285714285716,
+          0.2571428571428571,
+          0.39285714285714285,
+          0.42142857142857143,
+          0.45714285714285713,
+          0.5928571428571429,
+          0.5642857142857143,
+          0.6428571428571429,
+          0.7071428571428572,
+          0.7214285714285714,
+          0.7642857142857142,
+          0.7357142857142858,
+          0.8142857142857143,
+          0.8285714285714286,
+          0.8857142857142857,
+          0.9071428571428571,
+          0.9357142857142857
+        ],
+        "val_acc": [
+          0.06666666666666667,
+          0.13333333333333333,
+          0.2,
+          0.3,
+          0.3333333333333333,
+          0.36666666666666664,
+          0.36666666666666664,
+          0.4,
+          0.4,
+          0.4,
+          0.4,
+          0.43333333333333335,
+          0.4666666666666667,
+          0.4666666666666667,
+          0.4666666666666667,
+          0.5,
+          0.5333333333333333,
+          0.5,
+          0.5,
+          0.5333333333333333
+        ]
+      }
+    },
+    {
+      "model_name": "custom_cnn",
+      "run_name": "custom_cnn_from_scratch",
+      "dataset": "esc50_animals",
+      "device": "cuda",
+      "backbone_checkpoint": null,
+      "trainable_parameters": 6666186,
+      "total_epochs_run": 20,
+      "best_val_loss": 1.7211536169052124,
+      "train_time_sec": 35.7,
+      "test_metrics": {
+        "accuracy": 0.5666666666666667,
+        "macro_f1": 0.5127272727272727,
+        "weighted_f1": 0.536969696969697
+      },
+      "phases": [
+        {
+          "phase": "full_training",
+          "epochs": 20
+        }
+      ],
+      "history": {
+        "train_loss": [
+          2.3089507511683873,
+          2.291800226484026,
+          2.281920085634504,
+          2.2451976094927106,
+          2.22671091897147,
+          2.1728712694985526,
+          2.050893245424543,
+          1.9626141207558767,
+          1.9021609204156058,
+          1.778304055758885,
+          1.6351592302322389,
+          1.6714972972869873,
+          1.6158129862376622,
+          1.4949720859527589,
+          1.4427494491849626,
+          1.4297230992998395,
+          1.252109820502145,
+          1.2228552630969456,
+          1.2418998582022531,
+          1.0784306526184082
+        ],
+        "val_loss": [
+          2.2942419052124023,
+          2.2853665351867676,
+          2.263780355453491,
+          2.2218661308288574,
+          2.1651294231414795,
+          2.0904245376586914,
+          1.9989187717437744,
+          1.899296522140503,
+          1.8254623413085938,
+          1.775818943977356,
+          1.7751981019973755,
+          1.7565016746520996,
+          1.754493236541748,
+          1.763383150100708,
+          1.7479616403579712,
+          1.7211536169052124,
+          1.7812930345535278,
+          1.7642592191696167,
+          1.8077906370162964,
+          1.908119559288025
+        ],
+        "train_acc": [
+          0.05,
+          0.10714285714285714,
+          0.19285714285714287,
+          0.20714285714285716,
+          0.2,
+          0.2642857142857143,
+          0.25,
+          0.2785714285714286,
+          0.3357142857142857,
+          0.36428571428571427,
+          0.4714285714285714,
+          0.4142857142857143,
+          0.4357142857142857,
+          0.4714285714285714,
+          0.4785714285714286,
+          0.4785714285714286,
+          0.5642857142857143,
+          0.5642857142857143,
+          0.5857142857142857,
+          0.6142857142857143
+        ],
+        "val_acc": [
+          0.2,
+          0.16666666666666666,
+          0.23333333333333334,
+          0.2,
+          0.26666666666666666,
+          0.26666666666666666,
+          0.36666666666666664,
+          0.3333333333333333,
+          0.3333333333333333,
+          0.3,
+          0.4,
+          0.43333333333333335,
+          0.4666666666666667,
+          0.4,
+          0.36666666666666664,
+          0.4666666666666667,
+          0.4,
+          0.4,
+          0.43333333333333335,
+          0.36666666666666664
+        ]
+      }
+    },
+    {
+      "model_name": "mobilenetv2",
+      "run_name": "mobilenetv2_imagenet_only",
+      "dataset": "esc50_animals",
+      "device": "cuda",
+      "backbone_checkpoint": null,
+      "trainable_parameters": 1538890,
+      "total_epochs_run": 20,
+      "best_val_loss": 1.5533310174942017,
+      "train_time_sec": 29.8,
+      "test_metrics": {
+        "accuracy": 0.6,
+        "macro_f1": 0.6068253968253968,
+        "weighted_f1": 0.6131746031746032
+      },
+      "phases": [
+        {
+          "phase": "head_only",
+          "epochs": 3
+        }
+      ],
+      "history": {
+        "train_loss": [
+          2.28972281728472,
+          2.262656457083566,
+          2.1985136236463276,
+          2.1687502111707415,
+          2.087132855824062,
+          2.0259818553924562,
+          1.9630676678248815,
+          1.8868792499814715,
+          1.8052667038781303,
+          1.7619895287922451,
+          1.7004523992538452,
+          1.6259678261620658,
+          1.5792116471699307,
+          1.5255362510681152,
+          1.4256611585617065,
+          1.371562933921814,
+          1.3415921858378819,
+          1.2865829638072424,
+          1.3118055513926914,
+          1.1798602887562344
+        ],
+        "val_loss": [
+          2.296314001083374,
+          2.2879297733306885,
+          2.2653415203094482,
+          2.212430238723755,
+          2.169295072555542,
+          2.1191189289093018,
+          2.0771539211273193,
+          2.0313687324523926,
+          1.9854758977890015,
+          1.9501359462738037,
+          1.9062176942825317,
+          1.8490760326385498,
+          1.7990543842315674,
+          1.7431596517562866,
+          1.7116928100585938,
+          1.6793347597122192,
+          1.647394061088562,
+          1.607909917831421,
+          1.5699256658554077,
+          1.5533310174942017
+        ],
+        "train_acc": [
+          0.14285714285714285,
+          0.15714285714285714,
+          0.22142857142857142,
+          0.19285714285714287,
+          0.2714285714285714,
+          0.35714285714285715,
+          0.4357142857142857,
+          0.45,
+          0.5285714285714286,
+          0.6142857142857143,
+          0.65,
+          0.7428571428571429,
+          0.7142857142857143,
+          0.7357142857142858,
+          0.8,
+          0.8071428571428572,
+          0.8214285714285714,
+          0.8214285714285714,
+          0.8142857142857143,
+          0.8714285714285714
+        ],
+        "val_acc": [
+          0.13333333333333333,
+          0.1,
+          0.1,
+          0.13333333333333333,
+          0.13333333333333333,
+          0.23333333333333334,
+          0.26666666666666666,
+          0.36666666666666664,
+          0.4,
+          0.43333333333333335,
+          0.5,
+          0.5333333333333333,
+          0.5666666666666667,
+          0.6333333333333333,
+          0.6,
+          0.6333333333333333,
+          0.6666666666666666,
+          0.6333333333333333,
+          0.6666666666666666,
+          0.6333333333333333
+        ]
+      }
+    }
+  ],
+  "best_esc50_run": "mobilenetv2_imagenet_only",
+  "best_esc50_macro_f1": 0.6068253968253968,
+  "cross_domain": [
+    {
+      "approach": "MobileNetV2 (UrbanSound8K)",
+      "domain": "UrbanSound8K",
+      "macro_f1": 0.8310015598940783,
+      "accuracy": 0.8267622461170848,
+      "f1_drop": 0.0
+    },
+    {
+      "approach": "Urban transfer (MobileNetV2)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.516031746031746,
+      "accuracy": 0.5666666666666667,
+      "f1_drop": 0.31496981386233236
+    },
+    {
+      "approach": "From scratch (Custom CNN)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.5127272727272727,
+      "accuracy": 0.5666666666666667,
+      "f1_drop": 0.3182742871668056
+    },
+    {
+      "approach": "ImageNet only (MobileNetV2)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.6068253968253968,
+      "accuracy": 0.6,
+      "f1_drop": 0.2241761630686815
+    }
+  ],
+  "error_analysis": {
+    "transfer": {
+      "run_name": "mobilenetv2_urbansound_transfer",
+      "top_confused_pairs": [
+        {
+          "true_class": "pig",
+          "predicted_class": "crow",
+          "count": 2
+        },
+        {
+          "true_class": "insects",
+          "predicted_class": "sheep",
+          "count": 2
+        },
+        {
+          "true_class": "dog",
+          "predicted_class": "pig",
+          "count": 1
+        },
+        {
+          "true_class": "dog",
+          "predicted_class": "crow",
+          "count": 1
+        },
+        {
+          "true_class": "rooster",
+          "predicted_class": "sheep",
+          "count": 1
+        }
+      ],
+      "misclassified_examples": [
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\1-80785-A-7.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\1-80785-A-7.wav",
+          "true_label": "insects",
+          "predicted_label": "sheep",
+          "true_idx": 7,
+          "predicted_idx": 8
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-180977-A-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-180977-A-0.wav",
+          "true_label": "dog",
+          "predicted_label": "pig",
+          "true_idx": 0,
+          "predicted_idx": 2
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\5-214759-B-5.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\5-214759-B-5.wav",
+          "true_label": "cat",
+          "predicted_label": "rooster",
+          "true_idx": 5,
+          "predicted_idx": 1
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\5-198891-D-8.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\5-198891-D-8.wav",
+          "true_label": "sheep",
+          "predicted_label": "cow",
+          "true_idx": 8,
+          "predicted_idx": 3
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-104761-A-7.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-104761-A-7.wav",
+          "true_label": "insects",
+          "predicted_label": "sheep",
+          "true_idx": 7,
+          "predicted_idx": 8
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\1-208757-B-2.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\1-208757-B-2.wav",
+          "true_label": "pig",
+          "predicted_label": "crow",
+          "true_idx": 2,
+          "predicted_idx": 9
+        }
+      ],
+      "test_accuracy": 0.5666666666666667
+    },
+    "scratch": {
+      "run_name": "custom_cnn_from_scratch",
+      "top_confused_pairs": [
+        {
+          "true_class": "hen",
+          "predicted_class": "dog",
+          "count": 2
+        },
+        {
+          "true_class": "insects",
+          "predicted_class": "cow",
+          "count": 2
+        },
+        {
+          "true_class": "dog",
+          "predicted_class": "rooster",
+          "count": 1
+        },
+        {
+          "true_class": "dog",
+          "predicted_class": "crow",
+          "count": 1
+        },
+        {
+          "true_class": "pig",
+          "predicted_class": "insects",
+          "count": 1
+        }
+      ],
+      "misclassified_examples": [
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-140199-B-8.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-140199-B-8.wav",
+          "true_label": "sheep",
+          "predicted_label": "crow",
+          "true_idx": 8,
+          "predicted_idx": 9
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\1-80785-A-7.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\1-80785-A-7.wav",
+          "true_label": "insects",
+          "predicted_label": "cow",
+          "true_idx": 7,
+          "predicted_idx": 3
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\2-127109-A-6.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\2-127109-A-6.wav",
+          "true_label": "hen",
+          "predicted_label": "dog",
+          "true_idx": 6,
+          "predicted_idx": 0
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\1-208757-C-2.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\1-208757-C-2.wav",
+          "true_label": "pig",
+          "predicted_label": "sheep",
+          "true_idx": 2,
+          "predicted_idx": 8
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-180977-A-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-180977-A-0.wav",
+          "true_label": "dog",
+          "predicted_label": "crow",
+          "true_idx": 0,
+          "predicted_idx": 9
+        },
+        {
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\2-120586-A-6.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\2-120586-A-6.wav",
+          "true_label": "hen",
+          "predicted_label": "dog",
+          "true_idx": 6,
+          "predicted_idx": 0
+        }
+      ],
+      "test_accuracy": 0.5666666666666667
+    }
+  }
+}

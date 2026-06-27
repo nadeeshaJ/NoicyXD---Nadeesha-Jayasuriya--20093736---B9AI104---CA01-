@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Secrets / local env
+.env
+.env.local
+
+# Large data — download with scripts/setup_datasets.py
+data/raw/**
+!data/raw/.gitkeep
+data/processed/**
+!data/processed/.gitkeep
+
+# Model weights — retrain with scripts/run_step3_train.py
+experiments/**/*.pt
+experiments/**/*.pth
+experiments/**/*.ckpt
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Jupyter checkpoints
+.ipynb_checkpoints/

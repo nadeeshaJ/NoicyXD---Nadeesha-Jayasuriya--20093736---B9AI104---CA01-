@@ -1,0 +1,631 @@
+{
+  "step": 6,
+  "title": "Error Analysis and Advanced Evaluation",
+  "best_urban_run": "mobilenetv2",
+  "best_esc50_run": "mobilenetv2_imagenet_only",
+  "urban_error_analysis": [
+    {
+      "run_name": "custom_cnn",
+      "dataset_key": "urbansound8k",
+      "model_name": "custom_cnn",
+      "top_confused_pairs": [
+        {
+          "true_class": "street_music",
+          "predicted_class": "children_playing",
+          "count": 19
+        },
+        {
+          "true_class": "air_conditioner",
+          "predicted_class": "jackhammer",
+          "count": 13
+        },
+        {
+          "true_class": "dog_bark",
+          "predicted_class": "children_playing",
+          "count": 12
+        },
+        {
+          "true_class": "siren",
+          "predicted_class": "children_playing",
+          "count": 12
+        },
+        {
+          "true_class": "siren",
+          "predicted_class": "street_music",
+          "count": 11
+        }
+      ],
+      "misclassified_count": 209,
+      "misclassified_examples": [
+        {
+          "index": 0,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\100648-1-0-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\100648-1-0-0.wav",
+          "true_label": "car_horn",
+          "predicted_label": "drilling",
+          "true_idx": 1,
+          "predicted_idx": 4,
+          "confidence": 0.5043428540229797,
+          "true_class_prob": 0.0024143243208527565
+        },
+        {
+          "index": 4,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\100648-1-4-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\100648-1-4-0.wav",
+          "true_label": "car_horn",
+          "predicted_label": "dog_bark",
+          "true_idx": 1,
+          "predicted_idx": 3,
+          "confidence": 0.7655153274536133,
+          "true_class_prob": 0.16270704567432404
+        },
+        {
+          "index": 18,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102103-3-1-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102103-3-1-0.wav",
+          "true_label": "dog_bark",
+          "predicted_label": "drilling",
+          "true_idx": 3,
+          "predicted_idx": 4,
+          "confidence": 0.5129773616790771,
+          "true_class_prob": 0.2091660350561142
+        },
+        {
+          "index": 50,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\103438-5-0-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\103438-5-0-0.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "jackhammer",
+          "true_idx": 5,
+          "predicted_idx": 7,
+          "confidence": 0.3659709095954895,
+          "true_class_prob": 0.06989496201276779
+        },
+        {
+          "index": 51,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\103438-5-0-1.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\103438-5-0-1.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "children_playing",
+          "true_idx": 5,
+          "predicted_idx": 2,
+          "confidence": 0.36577731370925903,
+          "true_class_prob": 0.06133109703660011
+        },
+        {
+          "index": 52,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\103438-5-0-2.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\103438-5-0-2.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "drilling",
+          "true_idx": 5,
+          "predicted_idx": 4,
+          "confidence": 0.4284384846687317,
+          "true_class_prob": 0.10847608745098114
+        }
+      ],
+      "case_studies": [],
+      "test_accuracy": 0.7502986857825568
+    },
+    {
+      "run_name": "resnet50",
+      "dataset_key": "urbansound8k",
+      "model_name": "resnet50",
+      "top_confused_pairs": [
+        {
+          "true_class": "siren",
+          "predicted_class": "dog_bark",
+          "count": 16
+        },
+        {
+          "true_class": "engine_idling",
+          "predicted_class": "air_conditioner",
+          "count": 15
+        },
+        {
+          "true_class": "siren",
+          "predicted_class": "children_playing",
+          "count": 12
+        },
+        {
+          "true_class": "dog_bark",
+          "predicted_class": "children_playing",
+          "count": 10
+        },
+        {
+          "true_class": "children_playing",
+          "predicted_class": "dog_bark",
+          "count": 9
+        }
+      ],
+      "misclassified_count": 157,
+      "misclassified_examples": [
+        {
+          "index": 10,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\101382-2-0-12.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\101382-2-0-12.wav",
+          "true_label": "children_playing",
+          "predicted_label": "dog_bark",
+          "true_idx": 2,
+          "predicted_idx": 3,
+          "confidence": 0.6060827374458313,
+          "true_class_prob": 0.28581759333610535
+        },
+        {
+          "index": 18,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102103-3-1-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102103-3-1-0.wav",
+          "true_label": "dog_bark",
+          "predicted_label": "car_horn",
+          "true_idx": 3,
+          "predicted_idx": 1,
+          "confidence": 0.4801885187625885,
+          "true_class_prob": 0.046833980828523636
+        },
+        {
+          "index": 22,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102857-5-0-11.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102857-5-0-11.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "air_conditioner",
+          "true_idx": 5,
+          "predicted_idx": 0,
+          "confidence": 0.8987457752227783,
+          "true_class_prob": 0.08410810679197311
+        },
+        {
+          "index": 28,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102857-5-0-17.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102857-5-0-17.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "air_conditioner",
+          "true_idx": 5,
+          "predicted_idx": 0,
+          "confidence": 0.5725616216659546,
+          "true_class_prob": 0.41932588815689087
+        },
+        {
+          "index": 29,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102857-5-0-18.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102857-5-0-18.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "air_conditioner",
+          "true_idx": 5,
+          "predicted_idx": 0,
+          "confidence": 0.5139601230621338,
+          "true_class_prob": 0.48213696479797363
+        },
+        {
+          "index": 54,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\106014-5-0-1.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\106014-5-0-1.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "air_conditioner",
+          "true_idx": 5,
+          "predicted_idx": 0,
+          "confidence": 0.6262161135673523,
+          "true_class_prob": 0.3453095257282257
+        }
+      ],
+      "case_studies": [],
+      "test_accuracy": 0.8124253285543608
+    },
+    {
+      "run_name": "mobilenetv2",
+      "dataset_key": "urbansound8k",
+      "model_name": "mobilenetv2",
+      "top_confused_pairs": [
+        {
+          "true_class": "siren",
+          "predicted_class": "children_playing",
+          "count": 19
+        },
+        {
+          "true_class": "drilling",
+          "predicted_class": "jackhammer",
+          "count": 15
+        },
+        {
+          "true_class": "dog_bark",
+          "predicted_class": "children_playing",
+          "count": 9
+        },
+        {
+          "true_class": "dog_bark",
+          "predicted_class": "street_music",
+          "count": 8
+        },
+        {
+          "true_class": "street_music",
+          "predicted_class": "children_playing",
+          "count": 8
+        }
+      ],
+      "misclassified_count": 145,
+      "misclassified_examples": [
+        {
+          "index": 0,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\100648-1-0-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\100648-1-0-0.wav",
+          "true_label": "car_horn",
+          "predicted_label": "dog_bark",
+          "true_idx": 1,
+          "predicted_idx": 3,
+          "confidence": 0.5219535231590271,
+          "true_class_prob": 0.4451754093170166
+        },
+        {
+          "index": 18,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\102103-3-1-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\102103-3-1-0.wav",
+          "true_label": "dog_bark",
+          "predicted_label": "car_horn",
+          "true_idx": 3,
+          "predicted_idx": 1,
+          "confidence": 0.6217922568321228,
+          "true_class_prob": 0.04242730140686035
+        },
+        {
+          "index": 51,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\103438-5-0-1.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\103438-5-0-1.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "jackhammer",
+          "true_idx": 5,
+          "predicted_idx": 7,
+          "confidence": 0.7668519616127014,
+          "true_class_prob": 0.2004980742931366
+        },
+        {
+          "index": 52,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\103438-5-0-2.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\103438-5-0-2.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "jackhammer",
+          "true_idx": 5,
+          "predicted_idx": 7,
+          "confidence": 0.4713490307331085,
+          "true_class_prob": 0.23664608597755432
+        },
+        {
+          "index": 57,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\106014-5-0-4.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\106014-5-0-4.wav",
+          "true_label": "engine_idling",
+          "predicted_label": "air_conditioner",
+          "true_idx": 5,
+          "predicted_idx": 0,
+          "confidence": 0.9021779298782349,
+          "true_class_prob": 0.0937444418668747
+        },
+        {
+          "index": 64,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\115241-9-0-9.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\115241-9-0-9.wav",
+          "true_label": "street_music",
+          "predicted_label": "siren",
+          "true_idx": 9,
+          "predicted_idx": 8,
+          "confidence": 0.5485320091247559,
+          "true_class_prob": 0.43877530097961426
+        }
+      ],
+      "case_studies": [
+        {
+          "index": 308,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\165166-8-0-2.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\165166-8-0-2.wav",
+          "true_label": "siren",
+          "predicted_label": "children_playing",
+          "true_idx": 8,
+          "predicted_idx": 2,
+          "confidence": 0.7137168049812317,
+          "true_class_prob": 0.2745553255081177,
+          "explanation": "The model predicted `children_playing` instead of `siren`. These classes may share overlapping spectral patterns in the 4 s Mel-spectrogram window, or the recording may contain ambiguous or mixed environmental cues.",
+          "confusion_pair_count": 19
+        },
+        {
+          "index": 79,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\118278-4-0-0.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\118278-4-0-0.wav",
+          "true_label": "drilling",
+          "predicted_label": "jackhammer",
+          "true_idx": 4,
+          "predicted_idx": 7,
+          "confidence": 0.7498869299888611,
+          "true_class_prob": 0.0047408659011125565,
+          "explanation": "Drilling and jackhammer sounds are both rhythmic mechanical impacts with overlapping low-mid frequency energy. The CNN sees similar vertical striation patterns in the Mel-spectrogram.",
+          "confusion_pair_count": 15
+        },
+        {
+          "index": 108,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\128240-3-0-39.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\128240-3-0-39.wav",
+          "true_label": "dog_bark",
+          "predicted_label": "children_playing",
+          "true_idx": 3,
+          "predicted_idx": 2,
+          "confidence": 0.761968195438385,
+          "true_class_prob": 0.23582792282104492,
+          "explanation": "Outdoor recordings of children playing may contain dog barks or similar transient broadband events. Ambient human activity adds noise that obscures class-specific patterns.",
+          "confusion_pair_count": 9
+        },
+        {
+          "index": 633,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\51024-3-0-16.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\51024-3-0-16.wav",
+          "true_label": "dog_bark",
+          "predicted_label": "street_music",
+          "true_idx": 3,
+          "predicted_idx": 9,
+          "confidence": 0.7319660186767578,
+          "true_class_prob": 0.1785719245672226,
+          "explanation": "The model predicted `street_music` instead of `dog_bark`. These classes may share overlapping spectral patterns in the 4 s Mel-spectrogram window, or the recording may contain ambiguous or mixed environmental cues.",
+          "confusion_pair_count": 8
+        },
+        {
+          "index": 70,
+          "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\115418-9-0-6.png",
+          "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\115418-9-0-6.wav",
+          "true_label": "street_music",
+          "predicted_label": "children_playing",
+          "true_idx": 9,
+          "predicted_idx": 2,
+          "confidence": 0.8269864320755005,
+          "true_class_prob": 0.1719660609960556,
+          "explanation": "Music with percussive elements and human vocalisations can overlap with the spectral texture of children playing in public spaces.",
+          "confusion_pair_count": 8
+        }
+      ],
+      "test_accuracy": 0.8267622461170848
+    }
+  ],
+  "esc50_error_analysis": {
+    "run_name": "mobilenetv2_imagenet_only",
+    "dataset_key": "esc50_animals",
+    "model_name": "mobilenetv2",
+    "top_confused_pairs": [
+      {
+        "true_class": "pig",
+        "predicted_class": "crow",
+        "count": 3
+      },
+      {
+        "true_class": "dog",
+        "predicted_class": "frog",
+        "count": 1
+      },
+      {
+        "true_class": "rooster",
+        "predicted_class": "pig",
+        "count": 1
+      },
+      {
+        "true_class": "cow",
+        "predicted_class": "sheep",
+        "count": 1
+      },
+      {
+        "true_class": "hen",
+        "predicted_class": "pig",
+        "count": 1
+      }
+    ],
+    "misclassified_count": 12,
+    "misclassified_examples": [
+      {
+        "index": 0,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-140199-B-8.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-140199-B-8.wav",
+        "true_label": "sheep",
+        "predicted_label": "crow",
+        "true_idx": 8,
+        "predicted_idx": 9,
+        "confidence": 0.41123315691947937,
+        "true_class_prob": 0.18133564293384552
+      },
+      {
+        "index": 1,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\5-253085-A-3.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\5-253085-A-3.wav",
+        "true_label": "cow",
+        "predicted_label": "sheep",
+        "true_idx": 3,
+        "predicted_idx": 8,
+        "confidence": 0.23018969595432281,
+        "true_class_prob": 0.22597266733646393
+      },
+      {
+        "index": 6,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\1-208757-C-2.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\1-208757-C-2.wav",
+        "true_label": "pig",
+        "predicted_label": "crow",
+        "true_idx": 2,
+        "predicted_idx": 9,
+        "confidence": 0.37363913655281067,
+        "true_class_prob": 0.12096904218196869
+      },
+      {
+        "index": 10,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\2-120586-A-6.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\2-120586-A-6.wav",
+        "true_label": "hen",
+        "predicted_label": "cat",
+        "true_idx": 6,
+        "predicted_idx": 5,
+        "confidence": 0.20852556824684143,
+        "true_class_prob": 0.167232945561409
+      },
+      {
+        "index": 11,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\5-198891-D-8.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\5-198891-D-8.wav",
+        "true_label": "sheep",
+        "predicted_label": "pig",
+        "true_idx": 8,
+        "predicted_idx": 2,
+        "confidence": 0.20780406892299652,
+        "true_class_prob": 0.12713782489299774
+      },
+      {
+        "index": 14,
+        "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\esc50_animals\\images\\3-104761-A-7.png",
+        "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-104761-A-7.wav",
+        "true_label": "insects",
+        "predicted_label": "sheep",
+        "true_idx": 7,
+        "predicted_idx": 8,
+        "confidence": 0.15215294063091278,
+        "true_class_prob": 0.1305180788040161
+      }
+    ],
+    "case_studies": [],
+    "test_accuracy": 0.6
+  },
+  "inference_benchmarks": [
+    {
+      "model": "custom_cnn",
+      "total_parameters": 6666186,
+      "trainable_parameters": 6666186,
+      "model_file_size_mb": 25.43,
+      "inference_ms_mean": 0.912,
+      "inference_ms_std": 0.159,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 21,
+      "training_time_sec": 4252.1,
+      "training_time_per_epoch_sec": 202.5,
+      "test_accuracy": 0.7502986857825568,
+      "test_macro_f1": 0.7673285837997852
+    },
+    {
+      "model": "resnet50",
+      "total_parameters": 23528522,
+      "trainable_parameters": 23528522,
+      "model_file_size_mb": 90.05,
+      "inference_ms_mean": 4.408,
+      "inference_ms_std": 0.443,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 29,
+      "training_time_sec": 8293.4,
+      "training_time_per_epoch_sec": 286.0,
+      "test_accuracy": 0.8124253285543608,
+      "test_macro_f1": 0.8110973769457885
+    },
+    {
+      "model": "mobilenetv2",
+      "total_parameters": 2236682,
+      "trainable_parameters": 2236682,
+      "model_file_size_mb": 8.76,
+      "inference_ms_mean": 4.202,
+      "inference_ms_std": 0.374,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 30,
+      "training_time_sec": 1974.4,
+      "training_time_per_epoch_sec": 65.8,
+      "test_accuracy": 0.8267622461170848,
+      "test_macro_f1": 0.8310015598940783
+    }
+  ],
+  "cross_domain": [
+    {
+      "approach": "MobileNetV2 (UrbanSound8K)",
+      "domain": "UrbanSound8K",
+      "macro_f1": 0.8310015598940783,
+      "accuracy": 0.8267622461170848,
+      "f1_drop": 0.0
+    },
+    {
+      "approach": "Urban transfer (MobileNetV2)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.516031746031746,
+      "accuracy": 0.5666666666666667,
+      "f1_drop": 0.3149698138623323
+    },
+    {
+      "approach": "From scratch (Custom CNN)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.5127272727272727,
+      "accuracy": 0.5666666666666667,
+      "f1_drop": 0.3182742871668056
+    },
+    {
+      "approach": "ImageNet only (MobileNetV2)",
+      "domain": "ESC-50 Animals",
+      "macro_f1": 0.6068253968253968,
+      "accuracy": 0.6,
+      "f1_drop": 0.2241761630686815
+    }
+  ],
+  "case_studies": [
+    {
+      "index": 308,
+      "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\165166-8-0-2.png",
+      "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\165166-8-0-2.wav",
+      "true_label": "siren",
+      "predicted_label": "children_playing",
+      "true_idx": 8,
+      "predicted_idx": 2,
+      "confidence": 0.7137168049812317,
+      "true_class_prob": 0.2745553255081177,
+      "explanation": "Distant or intermittent sirens mixed with outdoor background activity can produce broadband energy similar to children playing. The 4 s window may capture more ambient noise than clear siren cycles.",
+      "confusion_pair_count": 19
+    },
+    {
+      "index": 79,
+      "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\118278-4-0-0.png",
+      "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\118278-4-0-0.wav",
+      "true_label": "drilling",
+      "predicted_label": "jackhammer",
+      "true_idx": 4,
+      "predicted_idx": 7,
+      "confidence": 0.7498869299888611,
+      "true_class_prob": 0.0047408659011125565,
+      "explanation": "Drilling and jackhammer sounds are both rhythmic mechanical impacts with overlapping low-mid frequency energy. The CNN sees similar vertical striation patterns in the Mel-spectrogram.",
+      "confusion_pair_count": 15
+    },
+    {
+      "index": 108,
+      "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\128240-3-0-39.png",
+      "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\128240-3-0-39.wav",
+      "true_label": "dog_bark",
+      "predicted_label": "children_playing",
+      "true_idx": 3,
+      "predicted_idx": 2,
+      "confidence": 0.761968195438385,
+      "true_class_prob": 0.23582792282104492,
+      "explanation": "Outdoor recordings of children playing may contain dog barks or similar transient broadband events. Ambient human activity adds noise that obscures class-specific patterns.",
+      "confusion_pair_count": 9
+    },
+    {
+      "index": 633,
+      "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\51024-3-0-16.png",
+      "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\51024-3-0-16.wav",
+      "true_label": "dog_bark",
+      "predicted_label": "street_music",
+      "true_idx": 3,
+      "predicted_idx": 9,
+      "confidence": 0.7319660186767578,
+      "true_class_prob": 0.1785719245672226,
+      "explanation": "Urban street-music recordings often include percussive beats and vocal bursts that resemble isolated bark transients after Mel conversion.",
+      "confusion_pair_count": 8
+    },
+    {
+      "index": 70,
+      "image_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\processed\\urbansound8k\\images\\115418-9-0-6.png",
+      "audio_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\115418-9-0-6.wav",
+      "true_label": "street_music",
+      "predicted_label": "children_playing",
+      "true_idx": 9,
+      "predicted_idx": 2,
+      "confidence": 0.8269864320755005,
+      "true_class_prob": 0.1719660609960556,
+      "explanation": "Music with percussive elements and human vocalisations can overlap with the spectral texture of children playing in public spaces.",
+      "confusion_pair_count": 8
+    }
+  ],
+  "figures_dir": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\reports\\figures\\step6"
+}

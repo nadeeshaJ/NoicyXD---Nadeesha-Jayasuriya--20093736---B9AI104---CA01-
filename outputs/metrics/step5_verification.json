@@ -1,0 +1,65 @@
+{
+  "step": 5,
+  "title": "Streamlit Deployment Verification",
+  "streamlit_command": "streamlit run app/streamlit_app.py",
+  "checks": [
+    {
+      "mode": "urban",
+      "sample_audio": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\100795-3-0-0.wav",
+      "expected_class_hint": "dog_bark",
+      "prediction": "dog_bark",
+      "confidence": 0.9999940395355225,
+      "top3": [
+        {
+          "label": "dog_bark",
+          "confidence": 0.9999940395355225
+        },
+        {
+          "label": "children_playing",
+          "confidence": 3.322271822980838e-06
+        },
+        {
+          "label": "street_music",
+          "confidence": 1.4266663583839545e-06
+        }
+      ],
+      "device": "cuda",
+      "checkpoint": "experiments/urbansound8k/mobilenetv2/best_model.pt"
+    },
+    {
+      "mode": "animal",
+      "sample_audio": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-180977-A-0.wav",
+      "expected_class_hint": "dog",
+      "prediction": "dog",
+      "confidence": 0.1865185648202896,
+      "top3": [
+        {
+          "label": "dog",
+          "confidence": 0.1865185648202896
+        },
+        {
+          "label": "pig",
+          "confidence": 0.17681722342967987
+        },
+        {
+          "label": "hen",
+          "confidence": 0.14056503772735596
+        }
+      ],
+      "device": "cuda",
+      "checkpoint": "experiments/esc50_animals/mobilenetv2_imagenet_only/best_model.pt"
+    }
+  ],
+  "deployment": {
+    "urban": {
+      "model_name": "mobilenetv2",
+      "checkpoint": "experiments/urbansound8k/mobilenetv2/best_model.pt",
+      "dataset_key": "urbansound8k"
+    },
+    "animal": {
+      "model_name": "mobilenetv2",
+      "checkpoint": "experiments/esc50_animals/mobilenetv2_imagenet_only/best_model.pt",
+      "dataset_key": "esc50_animals"
+    }
+  }
+}

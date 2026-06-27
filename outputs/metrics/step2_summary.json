@@ -1,0 +1,95 @@
+{
+  "step": 2,
+  "title": "Preprocessing Pipeline",
+  "audio": {
+    "sample_rate": 22050,
+    "duration_sec": 4.0,
+    "mono": true
+  },
+  "spectrogram": {
+    "n_fft": 2048,
+    "hop_length": 512,
+    "n_mels": 128,
+    "fmin": 0,
+    "fmax": 11025,
+    "power_to_db": true,
+    "normalize": true
+  },
+  "image": {
+    "height": 224,
+    "width": 224,
+    "channels": 3,
+    "format": "png"
+  },
+  "augmentation": {
+    "time_mask_max": 24,
+    "freq_mask_max": 16,
+    "num_time_masks": 1,
+    "num_freq_masks": 1
+  },
+  "validation": [
+    {
+      "dataset": "urbansound8k",
+      "splits": {
+        "train": {
+          "total": 7105,
+          "processed": 7105,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "val": {
+          "total": 790,
+          "processed": 790,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "test": {
+          "total": 837,
+          "processed": 837,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        }
+      }
+    },
+    {
+      "dataset": "esc50_animals",
+      "splits": {
+        "train": {
+          "total": 140,
+          "processed": 140,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "val": {
+          "total": 30,
+          "processed": 30,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        },
+        "test": {
+          "total": 30,
+          "processed": 30,
+          "skipped": 0,
+          "errors": 0,
+          "bad_shape_or_missing": 0,
+          "unique_labels": 10
+        }
+      }
+    }
+  ],
+  "figures": [
+    "preprocessing_pipeline_diagram.png",
+    "preprocessing_examples_urbansound8k.png",
+    "specaugment_demo.png"
+  ]
+}

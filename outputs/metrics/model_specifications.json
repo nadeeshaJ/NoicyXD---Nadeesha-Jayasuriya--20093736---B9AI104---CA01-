@@ -1,0 +1,22 @@
+{
+  "models": [
+    {
+      "model": "custom_cnn",
+      "total_parameters": 6666186,
+      "trainable_parameters": 6666186,
+      "role": "Baseline \u2014 designed from scratch"
+    },
+    {
+      "model": "resnet50",
+      "total_parameters": 23528522,
+      "trainable_parameters": 23528522,
+      "role": "Transfer learning \u2014 strong accuracy"
+    },
+    {
+      "model": "mobilenetv2",
+      "total_parameters": 2236682,
+      "trainable_parameters": 2236682,
+      "role": "Efficient transfer learning \u2014 speed/size"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "title": "Deep Learning-Based Environmental Sound Classification",
+  "generated": "2026-06-26",
+  "outputs": {
+    "cover_sheet": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\reports\\final\\Cover_Sheet.docx",
+    "main_report": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\reports\\final\\Final_Assignment_Report_updated.docx",
+    "development_notes": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\reports\\final\\Final_Development_Notes.docx"
+  },
+  "environment": {
+    "python": "3.13.3",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "torch": "2.6.0+cu124",
+    "cuda_available": true,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU"
+  },
+  "best_urban_model": "mobilenetv2",
+  "best_urban_macro_f1": 0.8310015598940783,
+  "best_esc50_run": "mobilenetv2_imagenet_only",
+  "best_esc50_macro_f1": 0.6068253968253968
+}

@@ -1,0 +1,119 @@
+# =============================================================================
+# B9AI104 CA1 — Shared pipeline configuration
+# Used by: preprocess, train, evaluate, Streamlit app, all scripts/
+# Edit values here once; all modules load via src/utils.load_config()
+# =============================================================================
+
+# --- Audio input standardisation (Section 2.1 / Figure 2.1) ---
+audio:
+  sample_rate: 22050      # Hz — Nyquist limit 11,025 Hz for environmental sounds
+  duration_sec: 4.0       # pad/trim every clip to fixed length for CNN batching
+  mono: true              # convert stereo to single channel
+
+# --- Mel-spectrogram settings (STFT → Mel → dB → normalise) ---
+spectrogram:
+  n_fft: 2048             # STFT window size (frequency resolution)
+  hop_length: 512         # STFT hop between frames (time resolution)
+  n_mels: 128             # Mel filterbank bins
+  fmin: 0
+  fmax: 11025             # half of sample_rate (Nyquist)
+  power_to_db: true       # convert power spectrogram to decibel scale
+  normalize: true         # min-max normalise each clip to [0, 1]
+
+# --- CNN input image format (224×224 matches ImageNet transfer models) ---
+image:
+  height: 224
+  width: 224
+  channels: 3             # grayscale Mel-spec replicated to RGB
+  format: png
+
+# --- Dataset paths and class labels ---
+datasets:
+  urbansound8k:
+    num_classes: 10
+    test_fold: 10          # official UrbanSound8K test fold for CA1 evaluation
+    raw_dir: data/raw/urbansound8k
+    metadata: data/raw/urbansound8k/metadata/UrbanSound8K.csv
+    processed_dir: data/processed/urbansound8k
+    splits_dir: data/splits/urbansound8k
+    classes:
+      - air_conditioner
+      - car_horn
+      - children_playing
+      - dog_bark
+      - drilling
+      - engine_idling
+      - gun_shot
+      - jackhammer
+      - siren
+      - street_music
+
+  esc50_animals:
+    num_classes: 10
+    raw_dir: data/raw/esc50
+    metadata: data/raw/esc50/meta/esc50_animals.csv
+    processed_dir: data/processed/esc50_animals
+    splits_dir: data/splits/esc50_animals
+    classes:
+      - dog
+      - rooster
+      - pig
+      - cow
+      - frog
+      - cat
+      - hen
+      - insects
+      - sheep
+      - crow
+
+# --- Training hyperparameters (Section 4.1) ---
+training:
+  batch_size: 32
+  epochs: 12                # max epochs; early stopping may stop sooner
+  learning_rate: 0.0001
+  early_stopping_patience: 5  # stop if val loss does not improve for 5 epochs
+  seed: 42                  # reproducibility
+
+# --- SpecAugment (training only — Section 4.7) ---
+augmentation:
+  time_mask_max: 24
+  freq_mask_max: 16
+  num_time_masks: 1
+  num_freq_masks: 1
+
+# --- Experiment output directories and best model selection ---
+experiments:
+  urbansound8k_dir: experiments/urbansound8k
+  esc50_animals_dir: experiments/esc50_animals
+  best_esc50_run: mobilenetv2_imagenet_only
+  best_urban_run: mobilenetv2   # Model 3 — highest macro F1 on fold-10 test
+
+# --- Streamlit deployment checkpoints (Section 6) ---
+deployment:
+  urban:
+    model_name: mobilenetv2
+    checkpoint: experiments/urbansound8k/mobilenetv2/best_model.pt
+    dataset_key: urbansound8k
+    models:
+      custom_cnn:
+        checkpoint: experiments/urbansound8k/custom_cnn/best_model.pt
+      resnet50:
+        checkpoint: experiments/urbansound8k/resnet50/best_model.pt
+      mobilenetv2:
+        checkpoint: experiments/urbansound8k/mobilenetv2/best_model.pt
+  animal:
+    model_name: mobilenetv2
+    checkpoint: experiments/esc50_animals/mobilenetv2_imagenet_only/best_model.pt
+    dataset_key: esc50_animals
+    models:
+      mobilenetv2:
+        checkpoint: experiments/esc50_animals/mobilenetv2_imagenet_only/best_model.pt
+
+# --- Streamlit UI labels and benchmark data path ---
+app:
+  benchmarks_json: reports/step6/inference_benchmarks.json
+  model_labels:
+    custom_cnn: Custom CNN
+    resnet50: ResNet50
+    mobilenetv2: MobileNetV2 (Deployed)
+  default_model: mobilenetv2

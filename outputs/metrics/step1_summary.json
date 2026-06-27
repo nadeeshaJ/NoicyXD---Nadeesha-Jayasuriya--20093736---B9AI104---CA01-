@@ -1,0 +1,50 @@
+{
+  "step": 1,
+  "title": "Dataset Acquisition & EDA",
+  "urbansound8k": {
+    "dataset": "UrbanSound8K",
+    "source": "Salamon & Bello (2014)",
+    "total_clips": 8732,
+    "num_classes": 10,
+    "clips_per_class_min": 374,
+    "clips_per_class_max": 1000,
+    "duration_min_sec": 0.055,
+    "duration_max_sec": 4.0,
+    "duration_mean_sec": 3.608,
+    "num_folds": 10,
+    "test_fold": 10,
+    "train_folds": "1-9",
+    "raw_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k",
+    "metadata_file": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\metadata\\UrbanSound8K.csv",
+    "missing_files": 0,
+    "sample_rate_hz": 44100
+  },
+  "esc50_animals": {
+    "dataset": "ESC-50 Animals (HF subset)",
+    "source": "DynamicSuperb/EnvironmentalSoundClassification_ESC50-Animals",
+    "total_clips": 200,
+    "num_classes": 10,
+    "clips_per_class_min": 15,
+    "clips_per_class_max": 22,
+    "duration_min_sec": 5.0,
+    "duration_max_sec": 5.0,
+    "duration_mean_sec": 5.0,
+    "num_folds": "N/A (stratified split planned)",
+    "test_fold": "N/A",
+    "train_folds": "80/20 stratified split (Step 2)",
+    "raw_path": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50",
+    "metadata_file": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\meta\\esc50_animals.csv",
+    "missing_files": 0,
+    "sample_rate_hz": 44100
+  },
+  "figures": [
+    "urban_class_distribution.png",
+    "urban_duration_distribution.png",
+    "urban_fold_heatmap.png",
+    "urban_sample_waveforms.png",
+    "urban_sample_rate.png",
+    "esc50_class_distribution.png",
+    "esc50_duration_distribution.png",
+    "esc50_sample_waveforms.png"
+  ]
+}

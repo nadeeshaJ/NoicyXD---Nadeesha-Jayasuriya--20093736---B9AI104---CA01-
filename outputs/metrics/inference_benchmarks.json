@@ -1,0 +1,49 @@
+{
+  "benchmarks": [
+    {
+      "model": "custom_cnn",
+      "total_parameters": 6666186,
+      "trainable_parameters": 6666186,
+      "model_file_size_mb": 25.43,
+      "inference_ms_mean": 0.912,
+      "inference_ms_std": 0.159,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 21,
+      "training_time_sec": 4252.1,
+      "training_time_per_epoch_sec": 202.5,
+      "test_accuracy": 0.7502986857825568,
+      "test_macro_f1": 0.7673285837997852
+    },
+    {
+      "model": "resnet50",
+      "total_parameters": 23528522,
+      "trainable_parameters": 23528522,
+      "model_file_size_mb": 90.05,
+      "inference_ms_mean": 4.408,
+      "inference_ms_std": 0.443,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 29,
+      "training_time_sec": 8293.4,
+      "training_time_per_epoch_sec": 286.0,
+      "test_accuracy": 0.8124253285543608,
+      "test_macro_f1": 0.8110973769457885
+    },
+    {
+      "model": "mobilenetv2",
+      "total_parameters": 2236682,
+      "trainable_parameters": 2236682,
+      "model_file_size_mb": 8.76,
+      "inference_ms_mean": 4.202,
+      "inference_ms_std": 0.374,
+      "inference_runs": 100,
+      "device": "cuda",
+      "training_epochs": 30,
+      "training_time_sec": 1974.4,
+      "training_time_per_epoch_sec": 65.8,
+      "test_accuracy": 0.8267622461170848,
+      "test_macro_f1": 0.8310015598940783
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "classes": [
+    "dog",
+    "rooster",
+    "pig",
+    "cow",
+    "frog",
+    "cat",
+    "hen",
+    "insects",
+    "sheep",
+    "crow"
+  ],
+  "class_to_idx": {
+    "dog": 0,
+    "rooster": 1,
+    "pig": 2,
+    "cow": 3,
+    "frog": 4,
+    "cat": 5,
+    "hen": 6,
+    "insects": 7,
+    "sheep": 8,
+    "crow": 9
+  },
+  "idx_to_class": {
+    "0": "dog",
+    "1": "rooster",
+    "2": "pig",
+    "3": "cow",
+    "4": "frog",
+    "5": "cat",
+    "6": "hen",
+    "7": "insects",
+    "8": "sheep",
+    "9": "crow"
+  }
+}

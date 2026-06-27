@@ -1,0 +1,81 @@
+{
+  "title": "CA1 Hyperparameter Ablation Studies",
+  "model3_head_ablation": [
+    {
+      "experiment": "model3_head_ablation",
+      "head_config": "direct_linear",
+      "hidden_units": "none",
+      "epochs": 8,
+      "phase": "frozen_backbone_head_only",
+      "best_val_acc": 0.6924050632911393,
+      "test_accuracy": 0.6977299880525687,
+      "test_macro_recall": 0.6922642269959604,
+      "test_macro_f1": 0.6937807693722149,
+      "train_time_sec": 117.6
+    },
+    {
+      "experiment": "model3_head_ablation",
+      "head_config": "dense_64",
+      "hidden_units": 64,
+      "epochs": 8,
+      "phase": "frozen_backbone_head_only",
+      "best_val_acc": 0.7455696202531645,
+      "test_accuracy": 0.7216248506571087,
+      "test_macro_recall": 0.7261072339210213,
+      "test_macro_f1": 0.7156655648175356,
+      "train_time_sec": 117.2
+    },
+    {
+      "experiment": "model3_head_ablation",
+      "head_config": "dense_128",
+      "hidden_units": 128,
+      "epochs": 8,
+      "phase": "frozen_backbone_head_only",
+      "best_val_acc": 0.7569620253164557,
+      "test_accuracy": 0.7407407407407407,
+      "test_macro_recall": 0.747891379300192,
+      "test_macro_f1": 0.7382362937331798,
+      "train_time_sec": 117.1
+    },
+    {
+      "experiment": "model3_head_ablation",
+      "head_config": "dense_256",
+      "hidden_units": 256,
+      "epochs": 8,
+      "phase": "frozen_backbone_head_only",
+      "best_val_acc": 0.7443037974683544,
+      "test_accuracy": 0.7491039426523297,
+      "test_macro_recall": 0.7505457180628674,
+      "test_macro_f1": 0.744708057532408,
+      "train_time_sec": 117.7
+    }
+  ],
+  "custom_cnn_dropout_ablation": [
+    {
+      "experiment": "custom_cnn_dropout_ablation",
+      "dropout": 0.0,
+      "epochs": 12,
+      "best_val_acc": 0.8493670886075949,
+      "test_accuracy": 0.6989247311827957,
+      "test_macro_recall": 0.7225188230929585,
+      "test_macro_f1": 0.7220278917398948,
+      "train_time_sec": 145.4
+    },
+    {
+      "experiment": "custom_cnn_dropout_ablation",
+      "dropout": 0.5,
+      "epochs": 12,
+      "best_val_acc": 0.8354430379746836,
+      "test_accuracy": 0.7156511350059738,
+      "test_macro_recall": 0.7378642532004853,
+      "test_macro_f1": 0.736653854222953,
+      "train_time_sec": 146.9
+    }
+  ],
+  "notes": [
+    "Model 3 ablation: MobileNetV2 frozen backbone, train custom Dense head only for 8 epochs.",
+    "Head sizes tested: direct linear, 64, 128, 256 nodes (course guideline: 64 x 2^i).",
+    "Dropout ablation: Custom CNN trained 12 epochs with dropout 0.0 vs 0.5.",
+    "Full production models used longer training and early stopping; ablations isolate hyperparameter effect."
+  ]
+}
