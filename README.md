@@ -49,10 +49,6 @@ python scripts/run_step6_error_analysis.py
 python -m streamlit run app/streamlit_app.py
 ```
 
-## Moodle submission
-
-Submit **Word documents separately** on Moodle (report, dev notes, cover sheet, slides).  
-This GitHub repo holds **code + reproducible outputs** only.
 
 ---
 *Synced from `noicy_XD` via `python scripts/build_github_repo.py`*
