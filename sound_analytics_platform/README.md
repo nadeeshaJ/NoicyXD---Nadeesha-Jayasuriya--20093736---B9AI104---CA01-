@@ -75,7 +75,7 @@ sound_analytics_platform/
 └── scripts/                  ← training pipeline
 ```
 
-### CA1 Streamlit demo (optional)
+### Streamlit demo
 
 From the **repository root**:
 
@@ -231,16 +231,6 @@ Full interactive docs: **http://localhost:8000/docs**
 
 ---
 
-## Related deliverables
-
-| Item | Location |
-|------|----------|
-| CA1 Word report | Moodle submission |
-| CA1 Streamlit demo | `streamlit/streamlit_app.py` (run from repo root — see below) |
-| Training / evaluation code | `../scripts/`, `../src/` |
-| User guide (extended) | `USER_GUIDE.md` (if present) |
-
----
 
 ## Author
 
