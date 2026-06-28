@@ -80,7 +80,7 @@ def main() -> None:
     summary = {
         "step": 5,
         "title": "Streamlit Deployment Verification",
-        "streamlit_command": "streamlit run app/streamlit_app.py",
+        "streamlit_command": "python -m streamlit run sound_analytics_platform/streamlit/streamlit_app.py",
         "checks": checks,
         "deployment": load_config()["deployment"],
     }

@@ -7,8 +7,8 @@ CA1 deployment demo (Section 6):
     - Shows waveform, Mel-spectrogram, model input, top-3 probabilities
     - Optional multi-model comparison and Grad-CAM explainability
 
-Run:
-    python -m streamlit run app/streamlit_app.py
+Run (from project root):
+    python -m streamlit run sound_analytics_platform/streamlit/streamlit_app.py
 """
 
 
@@ -23,7 +23,7 @@ from pathlib import Path
 
 
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 if str(ROOT) not in sys.path:
 

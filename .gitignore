@@ -28,3 +28,12 @@ Thumbs.db
 
 # Jupyter checkpoints
 .ipynb_checkpoints/
+
+# Web app (sound_analytics_platform)
+sound_analytics_platform/frontend/node_modules/
+sound_analytics_platform/frontend/dist/
+sound_analytics_platform/backend/.venv/
+sound_analytics_platform/**/__pycache__/
+
+# Local SQLite prediction log
+data/app_predictions.db

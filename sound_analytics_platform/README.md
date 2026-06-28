@@ -55,19 +55,13 @@ MobileNetV2 is the default deployed model for both urban and cross-domain routin
 
 ```
 sound_analytics_platform/
-├── README.md                 ← this file
-├── start_platform.ps1        ← one-click local startup (Windows)
-├── .env.example              ← environment variable template
+├── README.md
+├── USER_GUIDE.md
+├── start_platform.ps1
 ├── backend/
-│   ├── app/                  ← FastAPI routes, inference, Supabase writes
-│   ├── requirements.txt
-│   └── .env                  ← create from .env.example (not committed)
 ├── frontend/
-│   ├── src/                  ← React UI components
-│   ├── package.json
-│   └── .env                  ← Vite / Supabase / API URL
-└── supabase/
-    └── migrations/           ← SQL schema (run in Supabase dashboard)
+├── streamlit/streamlit_app.py
+├── supabase/
 ```
 
 **Parent project (required for inference):**
@@ -77,8 +71,16 @@ sound_analytics_platform/
 ├── src/                      ← predict.py, train.py, models/, gradcam, router
 ├── config/config.yaml
 ├── experiments/              ← best_model.pt checkpoints
-├── app/streamlit_app.py      ← separate CA1 Streamlit demo
-└── scripts/                  ← training and evaluation pipeline
+├── reports/                    ← figures + inference_benchmarks.json
+└── scripts/                  ← training pipeline
+```
+
+### CA1 Streamlit demo (optional)
+
+From the **repository root**:
+
+```powershell
+python -m streamlit run sound_analytics_platform/streamlit/streamlit_app.py
 ```
 
 ---
@@ -234,7 +236,7 @@ Full interactive docs: **http://localhost:8000/docs**
 | Item | Location |
 |------|----------|
 | CA1 Word report | Moodle submission |
-| Streamlit demo (Section 6) | `../app/streamlit_app.py` |
+| CA1 Streamlit demo | `streamlit/streamlit_app.py` (run from repo root — see below) |
 | Training / evaluation code | `../scripts/`, `../src/` |
 | User guide (extended) | `USER_GUIDE.md` (if present) |
 

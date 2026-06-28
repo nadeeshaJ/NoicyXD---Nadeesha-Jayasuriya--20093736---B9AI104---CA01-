@@ -62,7 +62,7 @@ Browser (React UI)  ──►  FastAPI backend  ──►  PyTorch models (paren
 | Frontend | http://localhost:5173 | Web interface |
 | Backend API | http://localhost:8000 | Inference + charts + DB writes |
 | Supabase | Cloud | Stores history and benchmark data |
-| ML models | `noicy_XD/experiments/` | Trained CNN checkpoints |
+| ML models | `../experiments/` | Trained CNN checkpoints |
 
 The platform does **not** replace your CA1 training pipeline — it **uses** those trained models and datasets at runtime.
 
@@ -81,13 +81,13 @@ The platform does **not** replace your CA1 training pipeline — it **uses** tho
 
 **Terminal 1 — Backend:**
 ```powershell
-cd "d:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\sound_analytics_platform\backend"
+cd sound_analytics_platform/backend
 python run.py
 ```
 
 **Terminal 2 — Frontend:**
 ```powershell
-cd "d:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\sound_analytics_platform\frontend"
+cd sound_analytics_platform/frontend
 npm run dev
 ```
 
@@ -400,4 +400,4 @@ Suggested 5-minute live demo flow:
 ---
 
 *Sound Analytics Platform — Deep Learning CA1 (B9AI104)*  
-*Location: `noicy_XD/sound_analytics_platform/`*
+*Location: `sound_analytics_platform/` inside the CA1 repository root*

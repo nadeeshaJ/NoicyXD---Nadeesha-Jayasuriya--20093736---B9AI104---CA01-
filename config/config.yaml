@@ -117,3 +117,8 @@ app:
     resnet50: ResNet50
     mobilenetv2: MobileNetV2 (Deployed)
   default_model: mobilenetv2
+  unknown_threshold: 0.40
+  confidence_high: 0.70
+  confidence_medium: 0.40
+  router_margin: 0.03
+  router_use_hints: true
