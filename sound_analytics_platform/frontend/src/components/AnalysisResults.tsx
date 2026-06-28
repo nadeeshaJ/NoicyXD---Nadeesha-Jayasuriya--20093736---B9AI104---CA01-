@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { Download, AlertCircle, CheckCircle2, Zap } from "lucide-react";
 import { exportPredictionReport, pngDataUrl, type PredictResult } from "../lib/api";
 import { MetricCard } from "./MetricCard";
 import { RouterExplanationPanel } from "./RouterExplanationPanel";
@@ -14,10 +14,10 @@ type Props = {
 };
 
 function reliabilityClass(level: string, isUnknown: boolean) {
-  if (isUnknown) return "border border-amber-400/30 bg-amber-400/10 text-amber-100";
-  if (level === "High") return "border border-accent/30 bg-accent/10 text-accent-glow";
-  if (level === "Medium") return "border border-yellow-400/20 bg-yellow-400/10 text-yellow-100";
-  return "border border-red-400/20 bg-red-400/10 text-red-100";
+  if (isUnknown) return "border-status-warning/30 bg-status-warning/[0.02] text-status-warning";
+  if (level === "High") return "border-status-success/30 bg-status-success/[0.02] text-status-success";
+  if (level === "Medium") return "border-status-warning/20 bg-status-warning/[0.02] text-status-warning";
+  return "border-status-error/30 bg-status-error/[0.02] text-status-error";
 }
 
 export function AnalysisResults({ result, benchmarks, modelName }: Props) {
@@ -40,60 +40,91 @@ export function AnalysisResults({ result, benchmarks, modelName }: Props) {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       {result.ground_truth_label ? (
-        <div className={`glass-panel p-5 text-sm ${isCorrect ? "border border-accent/30" : "border border-amber-400/20"}`}>
-          <div className="font-medium text-white">Dataset Ground Truth Comparison</div>
-          <p className="mt-2 text-white/70">
-            Known label: <strong>{formatLabel(result.ground_truth_label)}</strong> · Predicted:{" "}
-            <strong>{formatLabel(result.top_label)}</strong> · Sample:{" "}
-            <code className="text-accent-glow">{result.sample_id}</code>
-          </p>
+        <div className={`glass-panel p-5 text-sm flex items-center justify-between gap-4 ${isCorrect ? "border-status-success/30 bg-status-success/[0.01]" : "border-status-warning/20 bg-status-warning/[0.01]"}`}>
+          <div className="flex items-center gap-3">
+            {isCorrect ? (
+              <CheckCircle2 className="text-status-success shrink-0" size={20} />
+            ) : (
+              <AlertCircle className="text-status-warning shrink-0" size={20} />
+            )}
+            <div>
+              <div className="font-bold text-white tracking-wide">Dataset Auditing Comparison</div>
+              <p className="mt-0.5 text-xs text-white/50">
+                Ground Truth: <strong className="text-white">{formatLabel(result.ground_truth_label)}</strong> · Predicted:{" "}
+                <strong className={isCorrect ? "text-status-success" : "text-status-warning"}>{formatLabel(result.top_label)}</strong> · Sample:{" "}
+                <code className="text-accent-glow font-mono bg-white/[0.03] px-1.5 py-0.5 rounded border border-white/[0.05]">{result.sample_id}</code>
+              </p>
+            </div>
+          </div>
+          <div className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
+            isCorrect ? "bg-status-success/15 text-status-success border border-status-success/25" : "bg-status-warning/15 text-status-warning border border-status-warning/25"
+          }`}>
+            {isCorrect ? "Match" : "Mismatch"}
+          </div>
         </div>
       ) : null}
 
       {result.router ? <RouterExplanationPanel router={result.router} /> : null}
 
-      <section className={`glass-panel p-5 ${reliabilityClass(assessment.reliability_level, assessment.is_unknown)}`}>
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <div className="text-lg font-semibold">{assessment.display_name}</div>
-            <p className="mt-2 text-sm">
-              Confidence: {(assessment.confidence * 100).toFixed(1)}% · Reliability: {assessment.reliability_level}
-              {assessment.is_unknown ? " · Outside trained class list threshold" : ""}
-            </p>
-            <p className="mt-2 text-sm opacity-90">{assessment.reliability_message}</p>
-            <p className="mt-2 text-xs opacity-70">{assessment.calibration_note}</p>
+      <section className={`glass-panel p-6 relative overflow-hidden border ${reliabilityClass(assessment.reliability_level, assessment.is_unknown)}`}>
+        <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-white/[0.01] to-transparent pointer-events-none" />
+        <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
+          <div className="space-y-1">
+            <div className="text-xs uppercase font-bold tracking-widest opacity-60">Classification Assessment</div>
+            <div className="text-2xl font-extrabold text-white tracking-tight">{assessment.display_name}</div>
+            <div className="text-xs opacity-80 font-medium">
+              Confidence Score: {(assessment.confidence * 100).toFixed(1)}% · Reliability Rating: {assessment.reliability_level}
+              {assessment.is_unknown ? " · Flagged as Unknown Source (Low Confidence)" : ""}
+            </div>
+            <p className="mt-2 text-sm text-white/70 leading-relaxed font-medium">{assessment.reliability_message}</p>
+            <p className="text-xs text-white/40 italic">{assessment.calibration_note}</p>
           </div>
-          <button className="btn-secondary inline-flex items-center gap-2" onClick={handleExport}>
+          <button className="btn-primary" onClick={handleExport}>
             <Download size={16} />
-            Export Report
+            Export Archive ZIP
           </button>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Best Guess" value={formatLabel(result.top_label)} hint={`${(result.top_confidence * 100).toFixed(1)}% softmax`} accent />
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricCard label="Primary Guess" value={formatLabel(result.top_label)} hint={`${(result.top_confidence * 100).toFixed(1)}% confidence`} accent />
         <MetricCard
-          label="Live Latency"
-          value={result.inference_ms ? `${result.inference_ms.toFixed(2)} ms` : "—"}
-          hint={activeBenchmark ? `Benchmark ${activeBenchmark.inference_ms_mean} ms` : undefined}
+          label="Inference Latency"
+          value={result.inference_ms ? `${result.inference_ms.toFixed(1)} ms` : "—"}
+          hint={activeBenchmark ? `Benchmark: ${activeBenchmark.inference_ms_mean} ms` : undefined}
         />
-        <MetricCard label="Uncertainty" value={assessment.uncertainty_level} hint={`Entropy ${assessment.entropy_normalized.toFixed(3)}`} />
-        <MetricCard label="Saved To Supabase" value={result.saved_prediction_id ? "Yes" : "No"} hint={result.input_source ?? "live input"} />
+        <MetricCard label="Entropy Rate" value={assessment.uncertainty_level} hint={`Entropy: ${assessment.entropy_normalized.toFixed(3)}`} />
+        <MetricCard label="Supabase Sync" value={result.saved_prediction_id ? "Success" : "Offline"} hint={result.input_source ?? "live input"} />
       </section>
 
       {benchmarks.length >= 3 ? (
-        <section className="glass-panel p-5">
-          <h3 className="mb-4 text-lg font-medium">Efficiency vs Accuracy Trade-off</h3>
+        <section className="glass-panel p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <Zap size={16} className="text-accent-soft" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-white">Efficiency vs Accuracy Trade-off</h3>
+          </div>
           <div className="grid gap-4 lg:grid-cols-3">
             {benchmarks.slice(0, 3).map((row) => (
-              <div key={row.model_key} className={`rounded-xl border p-4 ${row.is_deployed ? "border-accent/30 bg-accent/5" : "border-white/10 bg-ink-900/70"}`}>
-                <div className="font-semibold">{row.display_name}</div>
-                <div className="mt-3 space-y-1 text-sm text-white/70">
-                  <div>Accuracy: {row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</div>
-                  <div>Latency: {row.inference_ms_mean} ms</div>
-                  <div>Size: {row.model_file_size_mb} MB</div>
+              <div 
+                key={row.model_key} 
+                className={`rounded-2xl border p-4 transition duration-300 ${
+                  row.is_deployed 
+                    ? "border-accent/30 bg-accent/[0.02] hover:bg-accent/[0.04]" 
+                    : "border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.02]"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="font-bold text-white text-sm">{row.display_name}</div>
+                  {row.is_deployed && (
+                    <span className="rounded bg-accent/25 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-glow">Active</span>
+                  )}
+                </div>
+                <div className="space-y-1.5 text-xs text-white/55">
+                  <div className="flex justify-between"><span>Accuracy:</span><span className="text-white font-semibold">{row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</span></div>
+                  <div className="flex justify-between"><span>Latency:</span><span className="text-white font-mono">{row.inference_ms_mean} ms</span></div>
+                  <div className="flex justify-between"><span>Size:</span><span className="text-white font-mono">{row.model_file_size_mb} MB</span></div>
                 </div>
               </div>
             ))}
@@ -101,35 +132,37 @@ export function AnalysisResults({ result, benchmarks, modelName }: Props) {
         </section>
       ) : null}
 
-      <section className="grid gap-4 xl:grid-cols-3">
+      <section className="grid gap-6 md:grid-cols-3">
         {[
-          { title: "Raw Waveform", src: result.waveform_png },
-          { title: "Mel-Spectrogram", src: result.mel_png },
-          { title: "Grad-CAM Overlay", src: result.gradcam_png ?? result.rgb_png },
+          { title: "Waveform Representation", src: result.waveform_png },
+          { title: "Input Mel-Spectrogram", src: result.mel_png },
+          { title: "Grad-CAM Explainability", src: result.gradcam_png ?? result.rgb_png },
         ].map((panel) => (
-          <div key={panel.title} className="glass-panel p-4">
-            <h3 className="mb-3 text-sm font-medium text-white/80">{panel.title}</h3>
-            <img src={pngDataUrl(panel.src)} alt={panel.title} className="w-full rounded-xl border border-white/10" />
+          <div key={panel.title} className="glass-panel p-4 hover:border-white/[0.08] transition">
+            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-white/60">{panel.title}</h3>
+            <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-brand-dark/30">
+              <img src={pngDataUrl(panel.src)} alt={panel.title} className="w-full hover:scale-105 transition duration-500" />
+            </div>
           </div>
         ))}
       </section>
 
-      <section className="glass-panel p-5">
-        <h3 className="mb-4 text-lg font-medium">Top Predictions</h3>
-        <div className="space-y-4">
+      <section className="glass-panel p-6">
+        <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">Softmax Distribution (Top 3 Candidates)</h3>
+        <div className="space-y-5">
           {result.predictions.map((prediction) => (
             <div key={prediction.label}>
-              <div className="mb-1 flex justify-between text-sm">
-                <span>{formatLabel(prediction.label)}</span>
-                <span>{(prediction.confidence * 100).toFixed(1)}%</span>
+              <div className="mb-1.5 flex justify-between text-xs font-medium">
+                <span className="text-white/80">{formatLabel(prediction.label)}</span>
+                <span className="text-accent-glow font-bold">{(prediction.confidence * 100).toFixed(1)}%</span>
               </div>
               <div className="progress-bar">
-                <div className="progress-fill" style={{ width: `${prediction.confidence * 100}%` }} />
+                <div className="progress-fill animate-pulse-slow" style={{ width: `${prediction.confidence * 100}%` }} />
               </div>
             </div>
           ))}
         </div>
       </section>
-    </>
+    </div>
   );
 }

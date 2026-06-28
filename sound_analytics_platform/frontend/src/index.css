@@ -4,42 +4,96 @@
 
 :root {
   color-scheme: dark;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top left, rgba(16, 185, 129, 0.12), transparent 30%),
-    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 25%),
-    #05080f;
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 40%),
+    #030712;
+  color: #f3f4f6;
+  overflow-y: scroll;
 }
 
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(3, 7, 18, 0.5);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 92, 246, 0.2);
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 92, 246, 0.4);
+}
+
+/* Modern Utilities */
 .glass-panel {
-  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl shadow-panel;
+  @apply rounded-2xl border border-white/[0.06] bg-brand-slate/[0.45] backdrop-blur-xl shadow-panel transition-all duration-300;
+}
+
+.glass-panel:hover {
+  @apply border-white/[0.09] shadow-[0_25px_60px_rgba(0,0,0,0.45)];
 }
 
 .metric-card {
-  @apply rounded-xl border border-white/10 bg-ink-900/80 p-4;
+  @apply rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5 transition-all duration-300 hover:border-white/[0.08] hover:bg-white/[0.03];
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-ink-950 transition hover:bg-accent-soft;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-white transition-all duration-300 shadow-glow hover:bg-accent-soft hover:shadow-[0_0_30px_rgba(139,92,246,0.55)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40;
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/10;
+  @apply inline-flex items-center justify-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.03] px-5 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-white/[0.08] hover:border-white/[0.15] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-40;
+}
+
+.btn-tab-active {
+  @apply flex w-full items-center gap-3 rounded-xl bg-gradient-to-r from-accent/15 to-accent/5 px-4 py-3 text-sm font-medium text-accent-soft border-l-2 border-accent transition-all duration-300 shadow-sm;
+}
+
+.btn-tab-inactive {
+  @apply flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm text-white/50 border-l-2 border-transparent transition-all duration-300 hover:bg-white/[0.03] hover:text-white/80;
 }
 
 .input-shell {
-  @apply w-full rounded-xl border border-white/10 bg-ink-900/70 px-3 py-2.5 text-sm text-white outline-none ring-accent/30 focus:ring-2;
+  @apply w-full rounded-xl border border-white/[0.07] bg-brand-dark/70 px-4 py-3 text-sm text-white outline-none transition-all duration-300 focus:border-accent/40 focus:ring-2 focus:ring-accent/10;
 }
 
 .progress-bar {
-  @apply h-2 overflow-hidden rounded-full bg-white/10;
+  @apply h-2.5 overflow-hidden rounded-full bg-white/[0.06];
 }
 
 .progress-fill {
-  @apply h-full rounded-full bg-gradient-to-r from-accent to-accent-soft;
+  @apply h-full rounded-full bg-gradient-to-r from-accent to-cyan-glow shadow-[0_0_10px_rgba(139,92,246,0.3)];
 }
+
+/* Audio wave skeletons loader */
+@keyframes bar-grow {
+  0%, 100% { height: 12px; }
+  50% { height: 38px; }
+}
+
+.visualizer-bar {
+  animation: bar-grow 1s ease-in-out infinite;
+}
+
+/* Pulse animation for recording */
+@keyframes pulse-ring {
+  0% { transform: scale(0.95); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+  100% { transform: scale(0.95); opacity: 0.5; }
+}
+
+.recording-pulse {
+  animation: pulse-ring 1.8s ease-in-out infinite;
+}
+

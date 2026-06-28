@@ -1,4 +1,4 @@
-import { Database, Play, Sparkles } from "lucide-react";
+import { Database, Play, Sparkles, BarChart, HardDrive } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   compareSampleModels,
@@ -84,77 +84,102 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
 
   return (
     <div className="space-y-6">
-      <section className="glass-panel p-6">
-        <div className="mb-4 flex items-center gap-2 text-accent-glow">
-          <Database size={18} />
-          <h2 className="text-xl font-semibold text-white">Project Data Sources</h2>
+      <section className="glass-panel p-6 relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-64 h-64 bg-glowGradient pointer-events-none z-0" />
+        
+        <div className="relative z-10 mb-4 flex items-center gap-3">
+          <div className="rounded-xl bg-accent/10 p-2.5 text-accent-soft border border-accent/20 shadow-glow">
+            <Database size={18} />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-tight">Project Audio Datasets</h2>
+            <p className="text-xs text-white/50">Run evaluations on test splits from UrbanSound8K and ESC-50 animals.</p>
+          </div>
         </div>
-        <p className="text-sm text-white/60">
-          Analyze clips directly from your existing UrbanSound8K and ESC-50 test splits — the same data used in training
-          and evaluation. Compare model predictions against known ground-truth labels.
-        </p>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          {overview.map((item) => (
-            <button
-              key={item.domain}
-              className={`rounded-2xl border p-4 text-left transition ${
-                domain === item.domain ? "border-accent/40 bg-accent/10" : "border-white/10 bg-ink-900/60 hover:bg-white/5"
-              }`}
-              onClick={() => {
-                setDomain(item.domain as "urban" | "animal");
-                setLabelFilter("");
-              }}
-            >
-              <div className="text-lg font-semibold">{item.title}</div>
-              <div className="mt-2 text-sm text-white/60">{item.source}</div>
-              <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-white/75">
-                <div>Total clips: {item.total_clips?.toLocaleString() ?? "—"}</div>
-                <div>Test clips: {item.test_clips}</div>
-                <div>Classes: {item.num_classes}</div>
-                <div>Domain: {item.domain}</div>
-              </div>
-            </button>
-          ))}
+        <div className="mt-6 grid gap-5 md:grid-cols-2 relative z-10">
+          {overview.map((item) => {
+            const isActive = domain === item.domain;
+            return (
+              <button
+                key={item.domain}
+                className={`rounded-2xl border p-5 text-left transition duration-300 ${
+                  isActive 
+                    ? "border-accent/40 bg-accent/[0.03] shadow-glow" 
+                    : "border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08]"
+                }`}
+                onClick={() => {
+                  setDomain(item.domain as "urban" | "animal");
+                  setLabelFilter("");
+                }}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-accent-soft shadow-[0_0_8px_#8b5cf6]" : "bg-white/20"}`}></span>
+                  <div className="text-lg font-bold text-white tracking-tight">{item.title}</div>
+                </div>
+                <div className="text-xs text-white/40 mb-4 font-medium">{item.source}</div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs text-white/70">
+                  <div className="flex items-center gap-2">
+                    <HardDrive size={13} className="text-white/30" />
+                    <span>Total Clips: {item.total_clips?.toLocaleString() ?? "—"}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <BarChart size={13} className="text-white/30" />
+                    <span>Test Split: {item.test_clips}</span>
+                  </div>
+                  <div>Classes: {item.num_classes}</div>
+                  <div className="capitalize">Domain: {item.domain}</div>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </section>
 
       {activeOverview ? (
-        <section className="glass-panel p-5">
-          <div className="mb-3 text-sm font-medium text-white/80">Supported classes in {activeOverview.title}</div>
+        <section className="glass-panel p-6">
+          <h3 className="mb-3.5 text-xs font-bold uppercase tracking-wider text-white/60">Class Distribution Filter</h3>
           <div className="flex flex-wrap gap-2">
-            {activeOverview.classes.map((label) => (
-              <button
-                key={label}
-                className={`rounded-full px-3 py-1 text-xs ${
-                  labelFilter === label ? "bg-accent text-ink-950" : "bg-white/10 text-white/70 hover:bg-white/15"
-                }`}
-                onClick={() => setLabelFilter(labelFilter === label ? "" : label)}
-              >
-                {formatLabel(label)}
-              </button>
-            ))}
+            {activeOverview.classes.map((label) => {
+              const isActive = labelFilter === label;
+              return (
+                <button
+                  key={label}
+                  className={`rounded-xl px-3.5 py-1.5 text-xs font-semibold transition duration-300 border ${
+                    isActive 
+                      ? "bg-accent text-white border-accent shadow-glow" 
+                      : "bg-white/[0.02] border-white/[0.05] text-white/60 hover:text-white hover:border-white/10 hover:bg-white/[0.04]"
+                  }`}
+                  onClick={() => setLabelFilter(isActive ? "" : label)}
+                >
+                  {formatLabel(label)}
+                </button>
+              );
+            })}
           </div>
         </section>
       ) : null}
 
-      <section className="glass-panel p-5">
-        <div className="mb-4 flex items-center gap-2">
-          <Sparkles size={16} className="text-accent" />
-          <h3 className="text-lg font-medium">Recommended Demo Samples</h3>
+      <section className="glass-panel p-6">
+        <div className="mb-5 flex items-center gap-2.5">
+          <Sparkles size={16} className="text-accent-soft" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white">Recommended Demo Samples</h3>
         </div>
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {curated.map((sample) => (
-            <div key={sample.sample_id} className="rounded-xl border border-white/10 bg-ink-900/70 p-4">
-              <div className="font-medium">{formatLabel(sample.label)}</div>
-              <div className="mt-1 text-xs text-white/45">{sample.filename}</div>
-              <div className="mt-2 text-sm text-white/60">{sample.note}</div>
-              <div className="mt-4 flex gap-2">
-                <button className="btn-primary flex-1" onClick={() => analyzeSample(sample)}>
-                  <Play size={14} />
+            <div key={sample.sample_id} className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-5 flex flex-col justify-between hover:border-white/[0.08] transition">
+              <div>
+                <div className="font-bold text-white text-base tracking-tight mb-1">{formatLabel(sample.label)}</div>
+                <div className="text-[10px] font-mono text-white/40 mb-3 truncate">{sample.filename}</div>
+                <p className="text-xs text-white/60 leading-relaxed font-medium">{sample.note}</p>
+              </div>
+              <div className="mt-5 flex gap-3">
+                <button className="btn-primary flex-1 py-2 text-xs" onClick={() => analyzeSample(sample)}>
+                  <Play size={12} className="fill-current" />
                   Analyze
                 </button>
-                <button className="btn-secondary flex-1" onClick={() => compareSample(sample)}>
+                <button className="btn-secondary flex-1 py-2 text-xs" onClick={() => compareSample(sample)}>
                   Compare
                 </button>
               </div>
@@ -163,28 +188,28 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
         </div>
       </section>
 
-      <section className="glass-panel p-5">
-        <h3 className="mb-4 text-lg font-medium">Browse Test Split Samples</h3>
-        <div className="overflow-x-auto">
+      <section className="glass-panel p-6">
+        <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">Browse Test Split Table</h3>
+        <div className="overflow-x-auto rounded-xl border border-white/[0.05]">
           <table className="min-w-full text-left text-sm">
-            <thead className="text-white/45">
+            <thead className="bg-white/[0.02] text-white/40 font-semibold">
               <tr>
-                <th className="px-3 py-2">Filename</th>
-                <th className="px-3 py-2">Ground Truth</th>
-                <th className="px-3 py-2">Action</th>
+                <th className="px-4 py-3">Filename</th>
+                <th className="px-4 py-3">Ground Truth</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-white/[0.05]">
               {samples.map((sample) => (
-                <tr key={sample.sample_id} className="border-t border-white/10 text-white/75">
-                  <td className="px-3 py-3 font-mono text-xs">{sample.filename}</td>
-                  <td className="px-3 py-3">{formatLabel(sample.label)}</td>
-                  <td className="px-3 py-3">
-                    <div className="flex gap-2">
-                      <button className="btn-secondary" onClick={() => analyzeSample(sample)}>
+                <tr key={sample.sample_id} className="hover:bg-white/[0.02] text-white/70 transition">
+                  <td className="px-4 py-3 font-mono text-xs text-white/50">{sample.filename}</td>
+                  <td className="px-4 py-3 font-semibold text-white">{formatLabel(sample.label)}</td>
+                  <td className="px-4 py-3">
+                    <div className="flex gap-2.5 justify-end">
+                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => analyzeSample(sample)}>
                         Analyze
                       </button>
-                      <button className="btn-secondary" onClick={() => compareSample(sample)}>
+                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => compareSample(sample)}>
                         Compare
                       </button>
                     </div>

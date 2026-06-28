@@ -146,11 +146,25 @@ def resolve_sample_audio(domain: str, sample_id: str) -> tuple[Path, str, str]:
         match = df[df["audio_path"].astype(str).str.endswith(sample_id)]
         if not match.empty:
             row = match.iloc[0]
-            return Path(str(row["audio_path"])), str(row["label"]), sample_id
+            orig_path = Path(str(row["audio_path"]))
+            parts = orig_path.parts
+            try:
+                data_idx = parts.index("data")
+                resolved_path = get_ml_project_root().joinpath(*parts[data_idx:])
+            except ValueError:
+                resolved_path = get_ml_project_root() / "data" / ("raw/urbansound8k/audio/fold10" if domain == "urban" else "raw/esc50/audio") / sample_id
+            return resolved_path, str(row["label"]), sample_id
 
     curated = get_curated_samples(domain)
     for item in curated:
         if item["sample_id"] == sample_id:
-            return Path(item["audio_path"]), item["label"], sample_id
+            orig_path = Path(item["audio_path"])
+            parts = orig_path.parts
+            try:
+                data_idx = parts.index("data")
+                resolved_path = get_ml_project_root().joinpath(*parts[data_idx:])
+            except ValueError:
+                resolved_path = get_ml_project_root() / "data" / ("raw/urbansound8k/audio/fold10" if domain == "urban" else "raw/esc50/audio") / sample_id
+            return resolved_path, item["label"], sample_id
 
     raise FileNotFoundError(f"Sample not found: {sample_id}")

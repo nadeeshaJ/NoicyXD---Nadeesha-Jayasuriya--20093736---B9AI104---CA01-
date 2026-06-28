@@ -12,28 +12,48 @@ import {
 } from "recharts";
 import { fetchAnalyticsDashboard, type AnalyticsDashboard } from "../lib/api";
 import { MetricCard } from "./MetricCard";
+import { Activity, RefreshCw } from "lucide-react";
 
 function DistributionChart({
   title,
   data,
+  gradientId,
+  color1,
+  color2,
 }: {
   title: string;
   data: Array<{ name: string; count: number }>;
+  gradientId: string;
+  color1: string;
+  color2: string;
 }) {
   return (
-    <div className="glass-panel p-5">
-      <h3 className="mb-4 text-sm font-medium text-white/80">{title}</h3>
+    <div className="glass-panel p-5 relative overflow-hidden">
+      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60 relative z-10">{title}</h3>
       {data.length === 0 ? (
-        <p className="text-sm text-white/45">No data yet.</p>
+        <p className="text-xs text-white/40 p-6 text-center border border-dashed border-white/5 rounded-2xl relative z-10">No data available yet.</p>
       ) : (
-        <div className="h-56">
+        <div className="h-56 relative z-10">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-              <XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-              <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} allowDecimals={false} />
-              <Tooltip contentStyle={{ background: "#111827", border: "1px solid rgba(255,255,255,0.1)" }} />
-              <Bar dataKey="count" fill="#10b981" radius={[6, 6, 0, 0]} />
+              <defs>
+                <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={color1} stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor={color2} stopOpacity={0.15}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.03)" />
+              <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} />
+              <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} allowDecimals={false} />
+              <Tooltip 
+                contentStyle={{ 
+                  background: "#0b0f19", 
+                  border: "1px solid rgba(255,255,255,0.08)", 
+                  borderRadius: "12px", 
+                  boxShadow: "0 10px 30px rgba(0,0,0,0.5)" 
+                }} 
+              />
+              <Bar dataKey="count" fill={`url(#${gradientId})`} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -60,11 +80,21 @@ export function AnalyticsDashboardPanel() {
   }, []);
 
   if (error) {
-    return <div className="glass-panel border border-red-400/20 p-4 text-red-200">{error}</div>;
+    return (
+      <div className="glass-panel border-status-error/30 bg-status-error/5 p-5 text-status-error text-sm font-medium flex items-center gap-3">
+        <span className="h-2 w-2 rounded-full bg-status-error shadow-[0_0_10px_#f43f5e] shrink-0"></span>
+        {error}
+      </div>
+    );
   }
 
   if (!data) {
-    return <div className="glass-panel p-8 text-center text-white/55">Loading operational telemetry...</div>;
+    return (
+      <div className="glass-panel p-12 text-center text-white/40 text-sm flex flex-col items-center justify-center gap-4">
+        <Activity size={32} className="text-accent animate-pulse" />
+        <span>Loading operational telemetry logs from database...</span>
+      </div>
+    );
   }
 
   const latencyTrend = data.latency_trend.map((point, index) => ({
@@ -75,58 +105,74 @@ export function AnalyticsDashboardPanel() {
 
   return (
     <div className="space-y-6">
-      <section className="glass-panel p-5">
-        <div className="mb-4 flex items-center justify-between">
+      <section className="glass-panel p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full bg-glowGradient pointer-events-none z-0" />
+        
+        <div className="mb-6 flex items-center justify-between relative z-10">
           <div>
-            <h2 className="text-xl font-semibold text-white">Operational Dashboard</h2>
-            <p className="mt-1 text-sm text-white/60">Live MLOps telemetry from Supabase inference logs for your session.</p>
+            <h2 className="text-xl font-bold text-white tracking-tight">Telemetry Operational Dashboard</h2>
+            <p className="text-xs text-white/50 leading-relaxed">Live MLOps telemetry aggregated from Supabase logs for this browser session.</p>
           </div>
-          <button className="btn-secondary" onClick={load}>
-            Refresh
+          <button className="btn-secondary py-2 text-xs" onClick={load}>
+            <RefreshCw size={13} className="mr-1.5" />
+            Sync Logs
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <MetricCard label="Total Predictions" value={data.total_predictions} hint="Logged in this browser session" accent />
+        <div className="grid gap-4 md:grid-cols-3 relative z-10">
+          <MetricCard label="Session Predictions" value={data.total_predictions} hint="Total logged events" accent />
           <MetricCard
-            label="Avg Latency"
-            value={data.avg_latency_ms ? `${data.avg_latency_ms.toFixed(2)} ms` : "—"}
-            hint="Mean inference time"
+            label="Average Latency"
+            value={data.avg_latency_ms ? `${data.avg_latency_ms.toFixed(1)} ms` : "—"}
+            hint="Mean inference duration"
           />
-          <MetricCard label="Last Hour Activity" value={data.predictions_last_hour} hint="Recent system utilization proxy" />
+          <MetricCard label="Last Hour Activity" value={data.predictions_last_hour} hint="Inference requests / hour" />
         </div>
-        <div className="mt-4 grid gap-4 md:grid-cols-2">
-          <MetricCard label="Low Confidence Events" value={data.low_confidence_count} hint="Reliability Low or < 40%" />
-          <MetricCard label="Unknown / Uncertain" value={data.unknown_count} hint="Below unknown threshold" />
+        <div className="mt-4 grid gap-4 md:grid-cols-2 relative z-10">
+          <MetricCard label="Low Confidence Detections" value={data.low_confidence_count} hint="Probability triggers < 40%" />
+          <MetricCard label="Out-of-Distribution Events" value={data.unknown_count} hint="Flagged unknown by calibrated confidence" />
         </div>
       </section>
 
-      <section className="glass-panel p-5">
-        <h3 className="mb-4 text-sm font-medium text-white/80">Latency Trend</h3>
+      <section className="glass-panel p-6 relative overflow-hidden">
+        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Inference Latency Trend (Recent runs)</h3>
         {latencyTrend.length === 0 ? (
-          <p className="text-sm text-white/45">Run a few analyses to populate latency trends.</p>
+          <p className="text-xs text-white/40 p-6 text-center border border-dashed border-white/5 rounded-2xl">Perform predictions to populate latency charts.</p>
         ) : (
-          <div className="h-64">
+          <div className="h-64 relative z-10">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={latencyTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-                <XAxis dataKey="index" tick={{ fill: "#94a3b8", fontSize: 11 }} />
-                <YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: "#111827", border: "1px solid rgba(255,255,255,0.1)" }} />
-                <Line type="monotone" dataKey="latency_ms" stroke="#34d399" strokeWidth={2} dot={{ r: 3 }} />
+                <defs>
+                  <linearGradient id="latencyGlow" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#22d3ee" stopOpacity={0.0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.03)" />
+                <XAxis dataKey="index" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} />
+                <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} />
+                <Tooltip 
+                  contentStyle={{ 
+                    background: "#0b0f19", 
+                    border: "1px solid rgba(255,255,255,0.08)", 
+                    borderRadius: "12px", 
+                    boxShadow: "0 10px 30px rgba(0,0,0,0.5)" 
+                  }} 
+                />
+                <Line type="monotone" dataKey="latency_ms" stroke="#22d3ee" strokeWidth={3} dot={{ r: 4, fill: "#22d3ee", strokeWidth: 0 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         )}
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-2">
-        <DistributionChart title="Urban Monitoring Events" data={data.urban_event_summary} />
-        <DistributionChart title="Animal Monitoring Events" data={data.animal_event_summary} />
-        <DistributionChart title="Predictions by Class" data={data.class_distribution} />
-        <DistributionChart title="Predictions by Model" data={data.model_distribution} />
-        <DistributionChart title="Predictions by Mode" data={data.mode_distribution} />
-        <DistributionChart title="Predictions by Input Source" data={data.source_distribution} />
+      <section className="grid gap-6 xl:grid-cols-2">
+        <DistributionChart title="Urban Monitoring Events" data={data.urban_event_summary} gradientId="urbanGrad" color1="#8b5cf6" color2="#6366f1" />
+        <DistributionChart title="Animal Monitoring Events" data={data.animal_event_summary} gradientId="animalGrad" color1="#22d3ee" color2="#06b6d4" />
+        <DistributionChart title="Predictions by Class" data={data.class_distribution} gradientId="classGrad" color1="#a78bfa" color2="#8b5cf6" />
+        <DistributionChart title="Predictions by Model" data={data.model_distribution} gradientId="modelGrad" color1="#10b981" color2="#059669" />
+        <DistributionChart title="Predictions by Mode" data={data.mode_distribution} gradientId="modeGrad" color1="#f59e0b" color2="#d97706" />
+        <DistributionChart title="Predictions by Input Source" data={data.source_distribution} gradientId="srcGrad" color1="#f43f5e" color2="#e11d48" />
       </section>
     </div>
   );

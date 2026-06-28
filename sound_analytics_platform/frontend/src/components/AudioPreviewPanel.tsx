@@ -1,4 +1,4 @@
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
 import { pngDataUrl, type AudioPreview } from "../lib/api";
 
 type Props = {
@@ -10,48 +10,72 @@ type Props = {
 
 export function AudioPreviewPanel({ preview, onRunAnalysis, onCompareModels, disabled }: Props) {
   return (
-    <section className="glass-panel p-5">
-      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+    <section className="glass-panel p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-64 h-64 bg-glowGradient pointer-events-none z-0" />
+      
+      <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
         <div>
-          <h2 className="text-lg font-semibold text-white">Pre-Inference Validation</h2>
-          <p className="mt-1 text-sm text-white/60">
-            Inspect the raw signal and automated preprocessing checks before running CNN inference.
+          <h2 className="text-xl font-bold text-white tracking-tight">Pre-Inference Validation Checks</h2>
+          <p className="mt-1 text-xs text-white/50 leading-relaxed">
+            Inspect the signal characteristics and checks before dispatching the tensor to CNN pipelines.
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
-          <button className="btn-primary" disabled={disabled || !preview.valid} onClick={onRunAnalysis}>
-            Run Analysis
+          <button 
+            className="btn-primary" 
+            disabled={disabled || !preview.valid} 
+            onClick={onRunAnalysis}
+          >
+            Run Classifier
+            <ArrowRight size={15} />
           </button>
-          <button className="btn-secondary" disabled={disabled || !preview.valid} onClick={onCompareModels}>
+          <button 
+            className="btn-secondary" 
+            disabled={disabled || !preview.valid} 
+            onClick={onCompareModels}
+          >
             Compare All Models
           </button>
         </div>
       </div>
 
-      <div className="mb-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
         {preview.validation_checks.map((check) => (
           <div
             key={check.name}
-            className={`rounded-xl border p-3 ${check.passed ? "border-accent/30 bg-accent/5" : "border-amber-400/30 bg-amber-400/5"}`}
+            className={`rounded-2xl border p-4 transition duration-300 ${
+              check.passed 
+                ? "border-status-success/20 bg-status-success/[0.02] hover:bg-status-success/[0.04]" 
+                : "border-status-warning/20 bg-status-warning/[0.02] hover:bg-status-warning/[0.04]"
+            }`}
           >
-            <div className="flex items-center gap-2 text-sm font-medium text-white">
-              {check.passed ? <CheckCircle2 size={16} className="text-accent" /> : <XCircle size={16} className="text-amber-300" />}
+            <div className="flex items-center gap-2.5 text-sm font-bold text-white mb-2">
+              {check.passed ? (
+                <CheckCircle2 size={16} className="text-status-success shrink-0" />
+              ) : (
+                <XCircle size={16} className="text-status-warning shrink-0" />
+              )}
               {check.name}
             </div>
-            <div className="mt-2 text-xs text-white/55">Target: {check.target}</div>
-            <div className="text-xs text-white/70">Actual: {check.actual}</div>
+            <div className="text-[11px] text-white/40 mb-1">Target: {check.target}</div>
+            <div className="text-xs font-semibold text-white/70">Actual: {check.actual}</div>
           </div>
         ))}
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-2">
-        <div>
-          <h3 className="mb-2 text-sm font-medium text-white/80">Raw Waveform Preview</h3>
-          <img src={pngDataUrl(preview.waveform_png)} alt="Waveform preview" className="w-full rounded-xl border border-white/10" />
+      <div className="grid gap-6 md:grid-cols-2 relative z-10">
+        <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-4 hover:border-white/[0.08] transition">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-white/60">Waveform Amplitude (Time Domain)</h3>
+          <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-brand-dark/30">
+            <img src={pngDataUrl(preview.waveform_png)} alt="Waveform preview" className="w-full hover:scale-105 transition duration-500" />
+          </div>
         </div>
-        <div>
-          <h3 className="mb-2 text-sm font-medium text-white/80">Mel-Spectrogram Preview</h3>
-          <img src={pngDataUrl(preview.mel_png)} alt="Mel preview" className="w-full rounded-xl border border-white/10" />
+        
+        <div className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-4 hover:border-white/[0.08] transition">
+          <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-white/60">Mel-Spectrogram (Frequency Domain)</h3>
+          <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-brand-dark/30">
+            <img src={pngDataUrl(preview.mel_png)} alt="Mel preview" className="w-full hover:scale-105 transition duration-500" />
+          </div>
         </div>
       </div>
     </section>
