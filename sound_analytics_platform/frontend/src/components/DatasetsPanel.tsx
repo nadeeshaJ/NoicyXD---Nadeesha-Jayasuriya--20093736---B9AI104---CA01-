@@ -1,4 +1,4 @@
-import { Database, Play, Sparkles, BarChart, HardDrive } from "lucide-react";
+import { Database, Play, Sparkles, BarChart, HardDrive, Volume2, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   compareSampleModels,
@@ -11,6 +11,7 @@ import {
   type ModelCompareResult,
   type PredictResult,
   type ProcessingMode,
+  API_BASE,
 } from "../lib/api";
 
 type Props = {
@@ -80,6 +81,37 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
     } finally {
       onLoading(false);
     }
+  }
+
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      activeAudio?.pause();
+    };
+  }, [activeAudio]);
+
+  function togglePlaySample(sample: DatasetSample) {
+    if (playingId === sample.sample_id) {
+      activeAudio?.pause();
+      setActiveAudio(null);
+      setPlayingId(null);
+      return;
+    }
+
+    activeAudio?.pause();
+
+    const url = `${API_BASE}/api/datasets/${sample.domain}/samples/${sample.sample_id}/audio`;
+    const audio = new Audio(url);
+    audio.play().catch((err) => console.error("Audio playback failed", err));
+    setActiveAudio(audio);
+    setPlayingId(sample.sample_id);
+    
+    audio.onended = () => {
+      setActiveAudio(null);
+      setPlayingId(null);
+    };
   }
 
   return (
@@ -174,13 +206,36 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                 <div className="text-[10px] font-mono text-white/40 mb-3 truncate">{sample.filename}</div>
                 <p className="text-xs text-white/60 leading-relaxed font-medium">{sample.note}</p>
               </div>
-              <div className="mt-5 flex gap-3">
-                <button className="btn-primary flex-1 py-2 text-xs" onClick={() => analyzeSample(sample)}>
-                  <Play size={12} className="fill-current" />
+              <div className="mt-5 flex gap-2.5 justify-between items-center">
+                {/* Listen Button (Icon Only) */}
+                <button 
+                  className={`p-2.5 rounded-xl border transition flex items-center justify-center shrink-0 ${
+                    playingId === sample.sample_id 
+                      ? "bg-status-success/20 border-status-success/40 text-status-success shadow-glow animate-pulse" 
+                      : "bg-white/[0.03] border-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10"
+                  }`}
+                  onClick={() => togglePlaySample(sample)}
+                  title={playingId === sample.sample_id ? "Stop audio" : "Listen to audio"}
+                >
+                  {playingId === sample.sample_id ? <Square size={14} className="fill-current" /> : <Volume2 size={14} />}
+                </button>
+
+                {/* Analyze Button */}
+                <button 
+                  className="btn-primary flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5" 
+                  onClick={() => analyzeSample(sample)}
+                >
+                  <Play size={11} className="fill-current" />
                   Analyze
                 </button>
-                <button className="btn-secondary flex-1 py-2 text-xs" onClick={() => compareSample(sample)}>
-                  Compare
+
+                {/* Compare Button (Icon Only) */}
+                <button 
+                  className="p-2.5 rounded-xl border border-white/[0.05] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10 transition flex items-center justify-center shrink-0" 
+                  onClick={() => compareSample(sample)}
+                  title="Compare across all models"
+                >
+                  <BarChart size={14} />
                 </button>
               </div>
             </div>
@@ -202,7 +257,22 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
             <tbody className="divide-y divide-white/[0.05]">
               {samples.map((sample) => (
                 <tr key={sample.sample_id} className="hover:bg-white/[0.02] text-white/70 transition">
-                  <td className="px-4 py-3 font-mono text-xs text-white/50">{sample.filename}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-white/50">
+                    <div className="flex items-center gap-2.5">
+                      <button 
+                        className={`p-1.5 rounded-lg border transition ${
+                          playingId === sample.sample_id 
+                            ? "bg-status-success/20 border-status-success/40 text-status-success shadow-glow animate-pulse" 
+                            : "bg-white/[0.03] border-white/[0.05] text-white/40 hover:text-white hover:border-white/10"
+                        }`}
+                        onClick={() => togglePlaySample(sample)}
+                        title={playingId === sample.sample_id ? "Stop audio" : "Play audio"}
+                      >
+                        {playingId === sample.sample_id ? <Square size={11} className="fill-current" /> : <Volume2 size={11} />}
+                      </button>
+                      <span>{sample.filename}</span>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 font-semibold text-white">{formatLabel(sample.label)}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2.5 justify-end">

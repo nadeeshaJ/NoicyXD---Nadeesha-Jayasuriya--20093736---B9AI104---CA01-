@@ -1,21 +1,70 @@
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, Volume2, Square } from "lucide-react";
 import { pngDataUrl, type AudioPreview } from "../lib/api";
+import { useState, useEffect } from "react";
 
 type Props = {
   preview: AudioPreview;
+  pendingAudio: { blob: Blob; source: string; filename?: string } | null;
   onRunAnalysis: () => void;
   onCompareModels: () => void;
   disabled?: boolean;
 };
 
-export function AudioPreviewPanel({ preview, onRunAnalysis, onCompareModels, disabled }: Props) {
+export function AudioPreviewPanel({ preview, pendingAudio, onRunAnalysis, onCompareModels, disabled }: Props) {
+  const [activeAudio, setActiveAudio] = useState<HTMLAudioElement | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    // Cleanup playback on unmount or file change
+    return () => {
+      activeAudio?.pause();
+    };
+  }, [activeAudio, pendingAudio]);
+
+  function togglePlay() {
+    if (activeAudio) {
+      activeAudio.pause();
+      setActiveAudio(null);
+      setIsPlaying(false);
+      return;
+    }
+
+    if (pendingAudio && pendingAudio.blob) {
+      const url = URL.createObjectURL(pendingAudio.blob);
+      const audio = new Audio(url);
+      audio.play().catch((err) => console.error("Playback failed", err));
+      setActiveAudio(audio);
+      setIsPlaying(true);
+      
+      audio.onended = () => {
+        setActiveAudio(null);
+        setIsPlaying(false);
+      };
+    }
+  }
+
   return (
     <section className="glass-panel p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-64 h-64 bg-glowGradient pointer-events-none z-0" />
       
       <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Pre-Inference Validation Checks</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-xl font-bold text-white tracking-tight">Pre-Inference Validation Checks</h2>
+            {pendingAudio && (
+              <button
+                className={`px-3 py-1 rounded-xl border text-[11px] font-bold transition flex items-center gap-1.5 ${
+                  isPlaying 
+                    ? "bg-status-success/15 border-status-success/30 text-status-success shadow-glow animate-pulse" 
+                    : "bg-white/[0.03] border-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+                }`}
+                onClick={togglePlay}
+              >
+                {isPlaying ? <Square size={10} className="fill-current" /> : <Volume2 size={10} />}
+                {isPlaying ? "Pause Sound" : "Play Sound"}
+              </button>
+            )}
+          </div>
           <p className="mt-1 text-xs text-white/50 leading-relaxed">
             Inspect the signal characteristics and checks before dispatching the tensor to CNN pipelines.
           </p>

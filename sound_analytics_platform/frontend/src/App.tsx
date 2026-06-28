@@ -295,6 +295,7 @@ export default function App() {
               {preview ? (
                 <AudioPreviewPanel
                   preview={preview}
+                  pendingAudio={pendingAudio}
                   onRunAnalysis={handleRunAnalysis}
                   onCompareModels={handleCompareModels}
                   disabled={loading}
@@ -433,10 +434,10 @@ export default function App() {
 
       {/* Result/Comparison Modal Overlay */}
       {(result || comparison) && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand-dark/85 backdrop-blur-md overflow-y-auto">
-          <div className="absolute inset-0" onClick={() => { setResult(null); setComparison(null); }} />
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-brand-dark/80 backdrop-blur-md p-4 md:p-10 flex justify-center items-start">
+          <div className="fixed inset-0" onClick={() => { setResult(null); setComparison(null); }} />
           
-          <div className="relative w-full max-w-6xl rounded-3xl border border-white/[0.08] bg-brand-dark/95 shadow-2xl overflow-y-auto max-h-[90vh] z-10 p-6 md:p-8 custom-scrollbar">
+          <div className="relative w-full max-w-6xl rounded-3xl border border-white/[0.08] bg-brand-dark/95 shadow-2xl p-6 md:p-8 z-10 my-auto">
             {/* Close button */}
             <button
               onClick={() => { setResult(null); setComparison(null); }}

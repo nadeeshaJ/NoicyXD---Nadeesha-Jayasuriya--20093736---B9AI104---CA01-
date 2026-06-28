@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, File, Form, Header, HTTPException, UploadFile
-from fastapi.responses import Response
+from fastapi.responses import Response, FileResponse
 
 from app.config import settings
 from app.schemas import (
@@ -107,6 +107,21 @@ def curated_samples(domain: str):
     if domain not in {"urban", "animal"}:
         raise HTTPException(status_code=400, detail="Domain must be urban or animal.")
     return get_curated_samples(domain)
+
+
+@router.get("/datasets/{domain}/samples/{sample_id}/audio")
+def get_sample_audio_file(domain: str, sample_id: str):
+    if domain not in {"urban", "animal"}:
+        raise HTTPException(status_code=400, detail="Domain must be urban or animal.")
+    try:
+        path, _, _ = resolve_sample_audio(domain, sample_id)
+        if not path.exists():
+            raise HTTPException(status_code=404, detail="Audio file not found on disk.")
+        return FileResponse(path, media_type="audio/wav")
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
 
 
 def _finalize_prediction(
