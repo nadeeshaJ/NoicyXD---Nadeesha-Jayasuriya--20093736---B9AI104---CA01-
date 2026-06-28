@@ -90,7 +90,18 @@ python -m streamlit run sound_analytics_platform/streamlit/streamlit_app.py
 - **Python 3.10+** with PyTorch (CUDA optional but recommended)
 - **Node.js 18+** and npm
 - **Supabase project** (schema applied — see below)
-- Trained checkpoints present under `../experiments/` (from CA1 training runs)
+- **Trained checkpoints** under `../experiments/` (see below — not in Git)
+
+### Install trained weights (required)
+
+After `git clone`, run from the **repository root**:
+
+```powershell
+python scripts/setup_checkpoints.py --source "D:\path\to\experiments"
+python scripts/setup_checkpoints.py --verify-only
+```
+
+Without real `.pt` files, the API may load random/mock weights and predictions will be wrong (flat ~10% or stuck on one class). Expected sizes: MobileNetV2 ~8.8 MB, Custom CNN ~25 MB, ResNet50 ~90 MB.
 
 ---
 

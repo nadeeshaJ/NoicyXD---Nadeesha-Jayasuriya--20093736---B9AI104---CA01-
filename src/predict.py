@@ -87,7 +87,22 @@ def load_mode_model(
     class_names = get_class_names(cfg, dataset_key)
     chosen_name, checkpoint = resolve_model_checkpoint(mode, model_name or deploy_cfg["model_name"], cfg)
     if not checkpoint.exists():
-        raise FileNotFoundError(f"Missing checkpoint: {checkpoint}")
+        raise FileNotFoundError(
+            f"Missing checkpoint: {checkpoint}\n"
+            "Trained .pt files are not in Git. Run:\n"
+            "  python scripts/setup_checkpoints.py --source PATH_TO_experiments"
+        )
+
+    from src.checkpoint_utils import verify_checkpoint_file
+
+    root = project_path()
+    try:
+        rel = checkpoint.relative_to(root).as_posix()
+    except ValueError:
+        rel = checkpoint.as_posix()
+    check = verify_checkpoint_file(rel, chosen_name)
+    if check["status"] != "ok":
+        raise FileNotFoundError(f"{check['message']} ({checkpoint})")
 
     model = load_checkpoint_model(
         chosen_name,

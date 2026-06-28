@@ -7,20 +7,20 @@
       "mode": "urban",
       "sample_audio": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\urbansound8k\\audio\\fold10\\100795-3-0-0.wav",
       "expected_class_hint": "dog_bark",
-      "prediction": "jackhammer",
-      "confidence": 0.10246740281581879,
+      "prediction": "dog_bark",
+      "confidence": 0.9999940395355225,
       "top3": [
         {
-          "label": "jackhammer",
-          "confidence": 0.10246740281581879
+          "label": "dog_bark",
+          "confidence": 0.9999940395355225
         },
         {
-          "label": "air_conditioner",
-          "confidence": 0.10244084894657135
+          "label": "children_playing",
+          "confidence": 3.322271822980838e-06
         },
         {
-          "label": "engine_idling",
-          "confidence": 0.10183639079332352
+          "label": "street_music",
+          "confidence": 1.4266663583839545e-06
         }
       ],
       "device": "cuda",
@@ -30,20 +30,20 @@
       "mode": "animal",
       "sample_audio": "D:\\DBS - Sem 2\\Deep Learning\\CA01\\noicy_XD\\data\\raw\\esc50\\audio\\3-180977-A-0.wav",
       "expected_class_hint": "dog",
-      "prediction": "pig",
-      "confidence": 0.10271947085857391,
+      "prediction": "dog",
+      "confidence": 0.1865185648202896,
       "top3": [
         {
+          "label": "dog",
+          "confidence": 0.1865185648202896
+        },
+        {
           "label": "pig",
-          "confidence": 0.10271947085857391
+          "confidence": 0.17681722342967987
         },
         {
           "label": "hen",
-          "confidence": 0.10209435969591141
-        },
-        {
-          "label": "dog",
-          "confidence": 0.10138680785894394
+          "confidence": 0.14056503772735596
         }
       ],
       "device": "cuda",

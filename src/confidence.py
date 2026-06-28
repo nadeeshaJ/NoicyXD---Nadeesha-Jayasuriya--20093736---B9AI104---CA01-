@@ -1,6 +1,24 @@
 import math
 from typing import Any
 
+import numpy as np
+
+
+def normalized_entropy(probabilities: dict[str, float] | np.ndarray) -> float:
+    """Return entropy in [0, 1], where 1 = maximum uncertainty."""
+    if isinstance(probabilities, dict):
+        probs = np.array(list(probabilities.values()), dtype=float)
+    else:
+        probs = np.asarray(probabilities, dtype=float)
+    if probs.size == 0:
+        return 1.0
+    probs = np.clip(probs, 1e-12, None)
+    probs = probs / probs.sum()
+    entropy = float(-np.sum(probs * np.log(probs)))
+    max_entropy = float(np.log(probs.size))
+    return entropy / max_entropy if max_entropy > 0 else 0.0
+
+
 def assess_prediction(result: dict[str, Any], cfg: dict[str, Any]) -> dict[str, Any]:
     """
     Assess prediction confidence and uncertainty (entropy).

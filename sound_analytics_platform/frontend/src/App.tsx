@@ -16,6 +16,7 @@ import { AudioInputPanel } from "./components/AudioInputPanel";
 import { AudioPreviewPanel } from "./components/AudioPreviewPanel";
 import { DatasetsPanel } from "./components/DatasetsPanel";
 import { ModelComparisonPanel } from "./components/ModelComparisonPanel";
+import { WaveLoader } from "./components/WaveLoader";
 import {
   checkHealth,
   compareModels,
@@ -50,6 +51,18 @@ function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+const getModeColorClass = (m: string) => {
+  if (m === "urban") return "border-accent/30 text-accent-soft bg-accent/5";
+  if (m === "animal") return "border-cyan-glow/30 text-cyan-glow bg-cyan-glow/5";
+  return "border-status-warning/30 text-status-warning bg-status-warning/5";
+};
+
+const getModelColorClass = (m: string) => {
+  if (m === "custom_cnn") return "border-status-success/30 text-status-success bg-status-success/5";
+  if (m === "resnet50") return "border-indigo-400/30 text-indigo-400 bg-indigo-500/5";
+  return "border-cyan-glow/30 text-cyan-glow bg-cyan-glow/5";
+};
+
 export default function App() {
   const [tab, setTab] = useState<Tab>("analyze");
   const [mode, setMode] = useState<ProcessingMode>("urban");
@@ -65,10 +78,16 @@ export default function App() {
   const [history, setHistory] = useState<any[]>([]);
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [apiStatus, setApiStatus] = useState<string>("Checking API...");
+  const [checkpointsReady, setCheckpointsReady] = useState(true);
+  const [checkpointSummary, setCheckpointSummary] = useState("");
 
   useEffect(() => {
     checkHealth()
-      .then((payload) => setApiStatus(`Online · ${payload.device}`))
+      .then((payload) => {
+        setApiStatus(`Online · ${payload.device}`);
+        setCheckpointsReady(Boolean(payload.checkpoints_ready));
+        setCheckpointSummary(payload.checkpoint_summary || "");
+      })
       .catch(() => setApiStatus("Offline"));
     loadBenchmarks();
   }, []);
@@ -202,37 +221,7 @@ export default function App() {
               ))}
             </nav>
 
-            <div className="mt-8 space-y-5 border-t border-white/[0.05] pt-6">
-              <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Processing Mode</label>
-                <select className="input-shell" value={mode} onChange={(e) => setMode(e.target.value as ProcessingMode)}>
-                  {modeOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="mb-2 block text-[10px] font-bold uppercase tracking-[0.2em] text-white/40">Backend Model</label>
-                <select className="input-shell" value={modelName} onChange={(e) => setModelName(e.target.value)}>
-                  {modelOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <label className="flex items-center gap-3 text-sm text-white/60 hover:text-white transition cursor-pointer select-none">
-                <input 
-                  type="checkbox" 
-                  checked={gradcam} 
-                  onChange={(e) => setGradcam(e.target.checked)} 
-                  className="rounded border-white/10 bg-brand-dark text-accent focus:ring-accent/20 focus:ring-offset-brand-dark"
-                />
-                <span>Grad-CAM explainability</span>
-              </label>
-            </div>
+            {/* Removed sidebar controls to place them globally on the horizontal bar */}
           </div>
 
           <div className="mt-8 rounded-2xl border border-white/[0.05] bg-white/[0.01] p-5 text-xs text-white/45 space-y-3">
@@ -252,40 +241,98 @@ export default function App() {
         </aside>
 
         <main className="flex-1 space-y-6 min-w-0">
-          <header className="glass-panel p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-80 h-full bg-cyanGradient pointer-events-none z-0" />
-            <div className="relative z-10">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-glow shadow-glow">
-                <Sparkles size={14} className="animate-spin-slow" />
-                noicyXD · Audio Diagnostics Platform
+          <header className="glass-panel p-6 relative overflow-hidden max-w-5xl">
+            <div className="absolute top-0 right-0 w-64 h-full bg-cyanGradient pointer-events-none z-0" />
+            <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="flex-1">
+                <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl leading-none">
+                  Intelligent Sound Classification & Neural Auditing
+                </h1>
+                <p className="mt-2 max-w-xl text-xs leading-relaxed text-white/50">
+                  Analyze raw acoustic streams, compare deep learning models in real-time, and audit decision boundaries with explainable AI heatmaps and expert routing telemetry.
+                </p>
               </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">Validate, classify, and audit sound event streams</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-relaxed text-white/60">
-                Pre-inference waveform validation, same-clip multi-model predictions auditing, dual-expert routing telemetry, and live database predictions monitoring.
-              </p>
+
+              {/* Dynamic Control Card inside Header */}
+              <div className="flex flex-col sm:flex-row lg:flex-col gap-3 bg-brand-dark/50 border border-white/[0.06] rounded-2xl p-3 shrink-0 lg:w-64 relative z-10 w-full lg:w-auto">
+                {/* Processing Mode */}
+                <div className="flex-1">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/40">Processing Mode</label>
+                  <select 
+                    className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition cursor-pointer ${getModeColorClass(mode)}`}
+                    value={mode} 
+                    onChange={(e) => setMode(e.target.value as ProcessingMode)}
+                  >
+                    {modeOptions.map((option) => (
+                      <option key={option.id} value={option.id} className="bg-brand-dark text-white">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Backend Model */}
+                <div className="flex-1">
+                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/40">Backend Model</label>
+                  <select 
+                    className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition cursor-pointer ${getModelColorClass(modelName)}`}
+                    value={modelName} 
+                    onChange={(e) => setModelName(e.target.value)}
+                  >
+                    {modelOptions.map((option) => (
+                      <option key={option.id} value={option.id} className="bg-brand-dark text-white">
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Grad-CAM explainability */}
+                <div className="flex items-center sm:items-end lg:items-center pt-2 sm:pt-0 lg:pt-2">
+                  <label className={`w-full border rounded-xl px-3 py-2 text-xs font-semibold transition cursor-pointer select-none flex items-center justify-between gap-3 ${
+                    gradcam 
+                      ? "border-status-success/30 text-status-success bg-status-success/5 shadow-glow" 
+                      : "border-white/10 text-white/40 bg-white/[0.01]"
+                  }`}>
+                    <span className="uppercase tracking-wider text-[10px]">Grad-CAM</span>
+                    <input 
+                      type="checkbox" 
+                      checked={gradcam} 
+                      onChange={(e) => setGradcam(e.target.checked)} 
+                      className="rounded border-white/10 bg-brand-dark text-accent focus:ring-accent/20 focus:ring-offset-brand-dark"
+                    />
+                  </label>
+                </div>
+              </div>
             </div>
           </header>
 
           {loading || previewLoading ? (
-            <div className="glass-panel flex flex-col items-center justify-center p-12 text-center">
-              <div className="flex items-end justify-center gap-1.5 h-12 mb-5">
-                <div className="w-1.5 bg-accent rounded-full visualizer-bar" style={{ animationDelay: '0.1s', height: '12px' }}></div>
-                <div className="w-1.5 bg-accent-soft rounded-full visualizer-bar" style={{ animationDelay: '0.3s', height: '12px' }}></div>
-                <div className="w-1.5 bg-cyan-glow rounded-full visualizer-bar" style={{ animationDelay: '0.5s', height: '12px' }}></div>
-                <div className="w-1.5 bg-accent-soft rounded-full visualizer-bar" style={{ animationDelay: '0.2s', height: '12px' }}></div>
-                <div className="w-1.5 bg-accent rounded-full visualizer-bar" style={{ animationDelay: '0.4s', height: '12px' }}></div>
-              </div>
-              <div className="text-base font-bold tracking-wide text-white/95">
-                {previewLoading ? "Running validation preview..." : "Processing audio signals..."}
-              </div>
-              <div className="text-xs text-white/40 mt-1">Applying Short-Time Fourier Transform & CNN Inference</div>
-            </div>
+            <WaveLoader 
+              message={previewLoading ? "Running validation preview..." : "Processing audio signals..."}
+              submessage="Applying Short-Time Fourier Transform & CNN Inference"
+            />
           ) : null}
           
           {error ? (
             <div className="glass-panel border-status-error/30 bg-status-error/5 p-5 text-status-error text-sm font-medium flex items-center gap-3">
               <span className="h-2 w-2 rounded-full bg-status-error shadow-[0_0_10px_#f43f5e] shrink-0"></span>
               {error}
+            </div>
+          ) : null}
+
+          {!checkpointsReady && apiStatus.startsWith("Online") ? (
+            <div className="glass-panel border-status-warning/30 bg-status-warning/5 p-5 text-status-warning text-sm">
+              <div className="font-semibold">Trained model weights missing or invalid</div>
+              <p className="mt-2 opacity-90">
+                {checkpointSummary || "Predictions will be wrong until real best_model.pt files are installed."}
+              </p>
+              <p className="mt-2 text-xs opacity-80">
+                From repo root:{" "}
+                <code className="rounded bg-black/30 px-1 py-0.5">
+                  python scripts/setup_checkpoints.py --source PATH_TO_experiments
+                </code>
+              </p>
             </div>
           ) : null}
 

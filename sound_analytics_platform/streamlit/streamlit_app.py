@@ -430,6 +430,23 @@ def main() -> None:
 
     benchmarks, cfg = get_benchmarks()
 
+    from src.checkpoint_utils import verify_all_deployment_checkpoints
+
+    ckpt_report = verify_all_deployment_checkpoints(run_probe=False)
+    if not ckpt_report["deploy_ready"]:
+        st.error(
+            "**Trained model weights missing or invalid.** Predictions will be wrong until you install "
+            "real `best_model.pt` files.\n\n"
+            f"{ckpt_report['summary']}\n\n"
+            "Fix from repo root:\n"
+            "```\n"
+            "python scripts/setup_checkpoints.py --source PATH_TO_experiments\n"
+            "```"
+        )
+        with st.expander("Checkpoint details"):
+            for row in ckpt_report["checkpoints"]:
+                st.write(f"- **{row['path']}**: {row['status']} — {row['message']}")
+
     mode_key, model_name, show_gradcam = render_sidebar(cfg, benchmarks)
 
 

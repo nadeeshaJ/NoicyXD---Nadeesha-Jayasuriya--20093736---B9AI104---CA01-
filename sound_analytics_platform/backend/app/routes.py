@@ -7,6 +7,7 @@ from app.config import settings
 from app.schemas import (
     AnalyticsDashboardResponse,
     AudioPreviewResponse,
+    CheckpointStatus,
     HealthResponse,
     ModelBenchmark,
     ModelCompareResponse,
@@ -34,11 +35,27 @@ router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse)
 def health_check() -> HealthResponse:
+    from src.checkpoint_utils import verify_all_deployment_checkpoints
+
+    report = verify_all_deployment_checkpoints(run_probe=False)
+    checkpoint_rows = [
+        CheckpointStatus(
+            path=row["path"],
+            model_key=row["model_key"],
+            status=row["status"],
+            size_mb=row.get("size_mb"),
+            message=row["message"],
+        )
+        for row in report["checkpoints"]
+    ]
     return HealthResponse(
-        status="ok",
+        status="ok" if report["deploy_ready"] else "degraded",
         device=str(inference_service.device),
         supabase_configured=bool(settings.supabase_anon_key or settings.supabase_service_role_key),
         ml_project_root=str(get_ml_project_root()),
+        checkpoints_ready=report["deploy_ready"],
+        checkpoint_summary=report["summary"],
+        checkpoints=checkpoint_rows,
     )
 
 

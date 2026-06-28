@@ -65,4 +65,21 @@ See **`sound_analytics_platform/README.md`** for Supabase setup, env vars, and f
 
 - `data/raw/` — download with `scripts/setup_datasets.py`
 - `data/processed/` — regenerate with `run_step2_preprocess.py`
-- `experiments/**/*.pt` — train with `run_step3_train.py`
+- **`experiments/**/*.pt`** — trained weights; **must be installed after clone**
+
+### Install trained checkpoints (required for correct predictions)
+
+`.pt` files are gitignored. Without them the app may load mock/random weights and show nonsense predictions (e.g. always `dog_bark` or flat 10% per class).
+
+```powershell
+# From repo root — copy from your training folder:
+python scripts/setup_checkpoints.py --source "D:\path\to\experiments"
+
+# Verify only:
+python scripts/setup_checkpoints.py --verify-only
+
+# Verify + detect untrained/random weights:
+python scripts/setup_checkpoints.py --verify-only --probe
+```
+
+Expected sizes: MobileNetV2 ~8.8 MB, Custom CNN ~25 MB, ResNet50 ~90 MB.

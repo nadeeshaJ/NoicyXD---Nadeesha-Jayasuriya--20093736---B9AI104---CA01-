@@ -75,11 +75,22 @@ class PredictResponse(BaseModel):
     input_source: str | None = None
 
 
+class CheckpointStatus(BaseModel):
+    path: str
+    model_key: str
+    status: str
+    size_mb: float | None = None
+    message: str
+
+
 class HealthResponse(BaseModel):
     status: str
     device: str
     supabase_configured: bool
     ml_project_root: str
+    checkpoints_ready: bool = False
+    checkpoint_summary: str = ""
+    checkpoints: list[CheckpointStatus] = Field(default_factory=list)
 
 
 class ModelBenchmark(BaseModel):
