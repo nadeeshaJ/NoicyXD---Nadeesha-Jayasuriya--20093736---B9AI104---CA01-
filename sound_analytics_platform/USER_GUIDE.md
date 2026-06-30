@@ -1,7 +1,7 @@
 # Sound Analytics Platform — User Guide
 
 Complete guide for the **Sound Analytics Platform** (`sound_analytics_platform/`).  
-Setup: `README.md`. Technical reference: `PLATFORM_CURRENT_STATE.md`.
+Setup: `README.md`. Technical reference: `PLATFORM_CURRENT_STATE.md`. Changes: `CHANGELOG.md`.
 
 ---
 
@@ -13,14 +13,15 @@ Setup: `README.md`. Technical reference: `PLATFORM_CURRENT_STATE.md`.
 4. [Header controls](#4-header-controls)
 5. [Tab: Analyze Live](#5-tab-analyze-live)
 6. [Tab: Project Datasets](#6-tab-project-datasets)
-7. [Tab: Analytics](#7-tab-analytics)
-8. [Tab: History](#8-tab-history)
-9. [Tab: Models](#9-tab-models)
-10. [Understanding results](#10-understanding-results)
-11. [Processing modes explained](#11-processing-modes-explained)
-12. [Supabase database](#12-supabase-database)
-13. [Troubleshooting](#13-troubleshooting)
-14. [Demo walkthrough](#14-demo-walkthrough)
+7. [Tab: Showcase](#7-tab-showcase)
+8. [Tab: Analytics](#8-tab-analytics)
+9. [Tab: History](#9-tab-history)
+10. [Tab: Models](#10-tab-models)
+11. [Understanding results](#11-understanding-results)
+12. [Processing modes explained](#12-processing-modes-explained)
+13. [Supabase database](#13-supabase-database)
+14. [Troubleshooting](#14-troubleshooting)
+15. [Demo walkthrough](#15-demo-walkthrough)
 
 ---
 
@@ -113,7 +114,7 @@ These settings appear in the **top header** on inference tabs only.
 |-----|:---------------:|:-------------:|:--------:|
 | Analyze Live | ✓ | ✓ | ✓ |
 | Project Datasets | ✗ | ✓ | ✓ |
-| Analytics / History / CNN Models | ✗ | ✗ | ✗ |
+| Showcase / Analytics / History / CNN Models | ✗ | ✗ | ✗ |
 
 | Control | Options | Purpose |
 |---------|---------|---------|
@@ -193,7 +194,23 @@ Example: Analyze a siren clip → ground truth `siren`, prediction `siren` at 94
 
 ---
 
-## 7. Tab: Analytics
+## 7. Tab: Showcase
+
+One-click runs on curated test clips. No header controls on this tab — each scenario sets mode and model internally (MobileNetV2).
+
+| Scenario | What it tests |
+|----------|----------------|
+| Urban siren | Urban mode on a siren clip |
+| Construction noise | Urban mode on jackhammer |
+| Animal dog bark | Animal mode on ESC-50 dog |
+| Auto-router · urban dog bark | Auto mode routes urban `dog_bark` |
+| Auto-router · animal dog | Auto mode routes animal `dog` |
+
+Click **Run scenario** → full analysis report modal opens (same as Analyze / Datasets).
+
+---
+
+## 8. Tab: Analytics
 
 Session metrics from Supabase prediction logs.
 
@@ -217,7 +234,7 @@ Click **Refresh** after running new analyses to update charts.
 
 ---
 
-## 8. Tab: History
+## 9. Tab: History
 
 Predictions saved to Supabase for the current browser session.
 
@@ -240,21 +257,19 @@ Session ID is stored in browser `localStorage`. Clearing site data starts a new 
 
 ---
 
-## 9. Tab: Models
+## 10. Tab: Models
 
-Benchmark stats from training/evaluation (fold-10 test set). Read-only — does not run inference.
+Benchmark stats from training/evaluation. Read-only — does not run inference.
 
-| Model | Urban accuracy | Checkpoint | Role |
-|-------|----------------|------------|------|
-| Custom CNN | ~75% | 25 MB | Baseline (from scratch) |
-| ResNet50 | ~81% | 90 MB | Transfer learning |
-| **MobileNetV2** | **~83%** | **9 MB** | **Deployed model** |
+**Urban (UrbanSound8K fold-10):** Custom CNN, ResNet50, MobileNetV2 — accuracy, F1, latency, checkpoint size.
 
-Each card shows accuracy, macro F1, latency, and checkpoint size. MobileNetV2 is marked as the deployed urban model.
+**Animal (ESC-50):** MobileNetV2 animal expert (~60% accuracy, 0.607 macro F1).
+
+**Deployment profiles:** how each architecture maps to mobile edge, GPU server, or baseline reference use.
 
 ---
 
-## 10. Understanding results
+## 11. Understanding results
 
 After any analysis (live or dataset), you see:
 
@@ -279,6 +294,10 @@ After any analysis (live or dataset), you see:
 
 Shows known label vs prediction and whether they match.
 
+### Confidence calibration
+
+Bar showing top-1 confidence with 40% (unknown) and 70% (high reliability) markers. Also shows top-1 vs top-2 gap, normalized entropy, and reliability label.
+
 ### Smart Auto-Router box (auto mode only)
 
 Shows urban vs animal probe scores and routing reason.
@@ -297,16 +316,22 @@ Full softmax output for every class.
 
 ### Same-clip multi-model comparison
 
-Table comparing all models on one audio clip:
+**Winner summary** (four cards): fastest model, highest confidence, label agreement %, suggested pick.
+
+Table below compares all models on one clip:
 - Prediction and confidence per model
 - Live latency vs benchmark latency
 - Checkpoint size
 
 Available via **Compare All Models** (Analyze Live) or **Compare** (Project Datasets).
 
+### Help banner
+
+Dismissible bar under the header with a short tab map. Reappears only if you clear site data (`sap-help-dismissed` in localStorage).
+
 ---
 
-## 11. Processing modes explained
+## 12. Processing modes explained
 
 ### Urban Sound
 - Routes to UrbanSound8K-trained model
@@ -326,7 +351,7 @@ Available via **Compare All Models** (Analyze Live) or **Compare** (Project Data
 
 ---
 
-## 12. Supabase database
+## 13. Supabase database
 
 **Project ID:** `fhpcrtnhqrmjsdcrpqzm`  
 **URL:** https://fhpcrtnhqrmjsdcrpqzm.supabase.co
@@ -354,7 +379,7 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 
 ---
 
-## 13. Troubleshooting
+## 14. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -369,17 +394,17 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 
 ---
 
-## 14. Demo walkthrough
+## 15. Demo walkthrough
 
-Example order for a short live walkthrough:
+Example order for a short walkthrough:
 
-1. Open app — note header controls (mode, model, Grad-CAM) on Analyze tab
-2. **Project Datasets** → UrbanSound8K → analyze a siren sample
-3. Check ground-truth match, Mel-spectrogram, and Grad-CAM panel
-4. Switch to **Smart Auto-Router** → compare urban dog_bark vs animal dog samples
-5. **CNN Models** tab — benchmark numbers for the three urban architectures
-6. **Analyze Live** — upload or record a clip
-7. **History** and **Analytics** — logged predictions and charts
+1. Dismiss or read the help banner under the header
+2. **Showcase** → Run **Urban siren** scenario
+3. In the report: confidence calibration, Mel-spec, Grad-CAM
+4. **Project Datasets** → analyze a clip; check ground truth
+5. **Analyze Live** → Compare All Models → winner summary cards
+6. **CNN Models** → urban + animal benchmarks and deployment profiles
+7. **History** and **Analytics** after a few runs
 
 ---
 
@@ -387,6 +412,7 @@ Example order for a short live walkthrough:
 
 | Action | Where |
 |--------|-------|
+| One-click demo | Showcase tab |
 | Upload new audio | Analyze Live |
 | Pre-inference validation | Automatic after upload/record |
 | Compare all 3 models on same clip | Analyze Live → Compare All Models |
@@ -394,6 +420,7 @@ Example order for a short live walkthrough:
 | Session charts | Analytics |
 | Compare models on dataset clip | Project Datasets → Compare |
 | View past runs | History |
+| Model benchmarks | CNN Models |
 | Change CNN | Header → Backend Model (Analyze or Datasets tab) |
 | Grad-CAM | Header checkbox (Analyze or Datasets tab) |
 | API docs | http://localhost:8000/docs |

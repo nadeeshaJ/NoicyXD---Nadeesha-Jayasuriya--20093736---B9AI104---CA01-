@@ -3,18 +3,22 @@
 **Updated:** June 2026  
 **Student:** Nadeesha Jayasuriya (20093736) · B9AI104 Deep Learning CA1
 
-Snapshot of what the platform includes today. Setup: `README.md`. Usage: `USER_GUIDE.md`.
+Snapshot of what the platform includes today. Setup: `README.md`. Usage: `USER_GUIDE.md`. Recent changes: `CHANGELOG.md`.
 
 ---
 
 ## 1. Summary
 
 Web application for classifying environmental audio with trained CNN models on Mel-spectrogram images.
+
 - Live upload and microphone recording
 - Dataset browsing (UrbanSound8K + ESC-50 animals)
-- Multi-model comparison and Grad-CAM
+- Showcase tab with one-click curated scenarios
+- Multi-model comparison with winner summary cards
+- Grad-CAM and confidence calibration in reports
 - Auto-routing between urban and animal experts
 - Prediction logging, history, and analytics via Supabase
+
 ```
 Browser (React + TypeScript)  →  FastAPI API  →  PyTorch (parent repo src/)
          │                              │
@@ -39,16 +43,17 @@ Browser (React + TypeScript)  →  FastAPI API  →  PyTorch (parent repo src/)
 |-----|---------|--------------------------------|
 | **Analyze Live** | Upload WAV or record ~4s → preview → classify / compare | Yes — Processing Mode, Backend Model, Grad-CAM |
 | **Project Datasets** | Browse test-split clips; analyze or compare per sample | Partial — Backend Model + Grad-CAM only (domain from dataset) |
+| **Showcase** | One-click curated demo scenarios | No |
 | **Analytics Dashboard** | Session metrics and charts | No |
 | **Prediction History** | Table of saved predictions for this browser session | No |
-| **CNN Models** | Static offline benchmark cards (urban models) | No |
+| **CNN Models** | Urban + animal benchmark cards; deployment profiles | No |
 
 ### 2.2 Header control card (context-sensitive)
 
 Controls appear in the **top header**, not the sidebar.
 
-| Control | Analyze Live | Project Datasets | Analytics / History / CNN Models |
-|---------|:------------:|:----------------:|:--------------------------------:|
+| Control | Analyze Live | Project Datasets | Showcase / Analytics / History / CNN Models |
+|---------|:------------:|:----------------:|:-------------------------------------------:|
 | Processing Mode | ✓ | ✗ | ✗ |
 | Backend Model | ✓ | ✓ | ✗ |
 | Grad-CAM | ✓ | ✓ | ✗ |
@@ -60,6 +65,7 @@ Controls appear in the **top header**, not the sidebar.
 | Urban Sound | UrbanSound8K expert (10 urban classes) |
 | Animal Vocalization | ESC-50 animal expert (10 classes); Backend Model locked to MobileNetV2 |
 | Smart Auto-Router | Picks urban or animal expert from dual-probe scores |
+
 **Backend Model options:**
 
 | Model | Urban | Animal |
@@ -71,9 +77,10 @@ Controls appear in the **top header**, not the sidebar.
 ### 2.3 Global UI elements
 
 - **Sidebar:** branding, tab navigation, system status (API online/offline, Supabase connected/local)
-- **WaveLoader:** shown during inference, dataset analyze/compare, analytics load, history load, audio preview validation
-- **Result modal:** full-screen overlay for classification report or multi-model comparison report
-- **Error banner:** API / inference failures surfaced above main content
+- **Help banner:** dismissible tab map below header (`AppHelpBanner.tsx`)
+- **WaveLoader:** inference, dataset analyze/compare, showcase runs, analytics/history load, audio preview
+- **Result modal:** classification report or multi-model comparison report
+- **Error banner:** API / inference failures above main content
 
 ---
 
@@ -96,6 +103,7 @@ Controls appear in the **top header**, not the sidebar.
 - Top prediction + top-3 probability bars
 - Reliability assessment (High / Medium / Low) and unknown/uncertain flag (< 40% threshold)
 - Router explanation panel (auto mode)
+- **Confidence calibration** — thresholds, entropy, top-1 vs top-2 gap (`ConfidenceCalibrationPanel`)
 - Waveform, Mel-spectrogram, Grad-CAM overlay images
 - Model benchmark comparison cards
 - **Play Sound** — replay uploaded/recording audio in browser
@@ -116,7 +124,29 @@ Controls appear in the **top header**, not the sidebar.
 7. Analyze saves to Supabase with `input_source=dataset`; **Play Sound** in report uses dataset stream URL
 
 **Ground truth:** sample predictions return `ground_truth_label` and `sample_id` for match/mismatch in results.
-### 3.3 Analytics Dashboard
+
+### 3.3 Showcase
+
+**Component:** `ShowcasePanel`
+
+**Flow:**
+
+1. Loads curated samples via `GET /api/datasets/{domain}/curated`
+2. User clicks **Run scenario** on a preset card
+3. `POST /api/predict/sample` with fixed `mobilenetv2` and scenario-specific mode
+4. Same result modal as other tabs
+
+**Built-in scenarios:**
+
+| Scenario | Domain | Mode | Sample label |
+|----------|--------|------|--------------|
+| Urban siren | urban | urban | siren |
+| Construction noise | urban | urban | jackhammer |
+| Animal dog bark | animal | animal | dog |
+| Auto-router · urban dog bark | urban | auto | dog_bark |
+| Auto-router · animal dog | animal | auto | dog |
+
+### 3.4 Analytics Dashboard
 
 **Component:** `AnalyticsDashboardPanel`
 
@@ -140,7 +170,8 @@ Controls appear in the **top header**, not the sidebar.
 - Predictions by class, model, mode, input source
 
 **UI:** loader on load, empty state, Sync Logs button, error message with retry.
-### 3.4 Prediction History
+
+### 3.5 Prediction History
 
 **Component:** `PredictionHistoryPanel`
 
@@ -155,19 +186,32 @@ Controls appear in the **top header**, not the sidebar.
 - Derives reliability from confidence when DB field is null (matches `config.yaml` thresholds)
 - WaveLoader, empty state, error + retry
 
-### 3.5 CNN Models
+**Comparison report** (`ModelComparisonPanel`):
 
-**Location:** inline in `App.tsx` (benchmark cards)
+- **Winner summary** — fastest, highest confidence, agreement %, suggested pick (`ComparisonWinnerCard`)
+- Per-model table (prediction, latency, checkpoint size)
 
-**Purpose:** Offline benchmark table for the three urban models from Step 4 training. Does not run inference.
+### 3.6 CNN Models
+
+**Component:** `ModelsPanel`
+
+**Purpose:** Read-only benchmark reference. Does not run inference.
+
+**Urban section** (UrbanSound8K fold-10, from `model_benchmarks`):
+
 | Model | Test accuracy | Macro F1 | Deployed? |
 |-------|---------------|----------|-----------|
 | Custom CNN | 75.0% | 0.767 | No |
 | ResNet50 | 81.2% | 0.811 | No |
-| **MobileNetV2** | **82.7%** | **0.831** | **Yes (deployed)** |
-Also shows mean latency and checkpoint file size. Data from Supabase `model_benchmarks` table (seeded in migration 001), with API fallback to `config.yaml` / `reports/step6/inference_benchmarks.json`.
+| MobileNetV2 | 82.7% | 0.831 | Yes |
 
-**Note:** Animal ESC-50 MobileNetV2 is not listed here (urban benchmarks only). Animal expert is used at runtime in animal/auto modes.
+**Animal section** (ESC-50, from training summary):
+
+| Model | Test accuracy | Macro F1 | Deployed? |
+|-------|---------------|----------|-----------|
+| MobileNetV2 (Animal Expert) | 60.0% | 0.607 | Yes |
+
+**Deployment profiles:** static cards for mobile/edge, GPU server, and baseline reference scenarios.
 
 ---
 
@@ -275,8 +319,13 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | `AudioInputPanel.tsx` | File upload + microphone recording |
 | `AudioPreviewPanel.tsx` | Preview validation UI, Run Classifier, Compare All |
 | `DatasetsPanel.tsx` | Dataset browser, analyze/compare per sample |
-| `AnalysisResults.tsx` | Full classification report modal content |
+| `ShowcasePanel.tsx` | Curated one-click demo scenarios |
+| `AnalysisResults.tsx` | Classification report modal content |
+| `ConfidenceCalibrationPanel.tsx` | Confidence thresholds and entropy in report |
 | `ModelComparisonPanel.tsx` | Multi-model comparison report |
+| `ComparisonWinnerCard.tsx` | Winner summary on comparison report |
+| `ModelsPanel.tsx` | CNN Models tab (urban, animal, deployment profiles) |
+| `AppHelpBanner.tsx` | Dismissible tab guide banner |
 | `RouterExplanationPanel.tsx` | Auto-router scores and routing reason |
 | `AnalyticsDashboardPanel.tsx` | Analytics charts and summary cards |
 | `PredictionHistoryPanel.tsx` | Session history table |
@@ -371,25 +420,30 @@ Browser session ID → GET /predictions or /analytics/dashboard
 
 ## 10. Change log
 
-| Area | Change |
-|------|--------|
-| Checkpoints | `setup_checkpoints.py` copies 4 `.pt` files from experiments |
-| Auto-router | Fixed `urban_probe` / `urban_score` serialization mismatch |
-| Microphone | WebM recordings converted to WAV before upload |
-| Datasets tab | Processing Mode hidden; loader on analyze/compare; domain from sample |
-| Analytics | Fixed Supabase save failure; loader; empty and error states |
-| History | Dedicated panel; API load path; reliability fallback; model column |
-| Header | Controls hidden on analytics, history, and CNN Models tabs |
-| Play Sound | Fixed blob URL lifecycle in analysis report |
-| API | OpenAPI/Swagger descriptions added |
+See **`CHANGELOG.md`** for dated entries.
+
+### Phase A (June 2026)
+
+| Feature | Component |
+|---------|-----------|
+| Showcase tab | `ShowcasePanel.tsx` |
+| Comparison winner cards | `ComparisonWinnerCard.tsx` |
+| Confidence calibration | `ConfidenceCalibrationPanel.tsx` |
+| CNN Models expansion | `ModelsPanel.tsx` |
+| Help banner | `AppHelpBanner.tsx` |
+
+### Earlier fixes (June 2026)
+
+Supabase save fallback, analytics/history panels, datasets loader, header control visibility, microphone WAV conversion, Play Sound fix, auto-router serialization. Details in `CHANGELOG.md`.
+
 ---
 
 ## 11. Known limitations (current)
 
 | Limitation | Notes |
 |------------|-------|
-| Animal model selection | Only MobileNetV2 trained/deployed for animal domain |
-| CNN Models tab | Urban benchmarks only; no animal expert card |
+| Animal model selection | Only MobileNetV2 trained for animal domain (now shown on CNN Models tab) |
+| CNN Models tab | Urban benchmarks from DB; animal stats from training summary JSON |
 | Compare on datasets | Uses sample domain; does not save comparison to history |
 | Session scoped | History/analytics per browser `localStorage` session ID |
 | Audio format | Live input expects WAV-compatible pipeline (mic converted client-side) |
@@ -401,6 +455,7 @@ Browser session ID → GET /predictions or /analytics/dashboard
 ## 12. Repository layout
 ```
 sound_analytics_platform/
+├── CHANGELOG.md
 ├── PLATFORM_CURRENT_STATE.md    ← this document
 ├── README.md                    ← setup & run
 ├── USER_GUIDE.md                ← usage walkthrough
@@ -452,3 +507,5 @@ sound_analytics_platform/
 | Urban + animal sounds | Dual experts and dataset tabs |
 | Evaluation metrics | Benchmark cards and ZIP export |
 | Logging and monitoring | Supabase predictions, history, analytics dashboard |
+| Showcase demos | Curated scenarios tab |
+| Report extras | Confidence calibration, comparison winner summary |

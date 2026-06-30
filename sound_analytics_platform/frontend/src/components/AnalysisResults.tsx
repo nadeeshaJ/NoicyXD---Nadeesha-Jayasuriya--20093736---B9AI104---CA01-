@@ -2,6 +2,7 @@ import { Download, AlertCircle, CheckCircle2, Zap, Volume2, Square } from "lucid
 import { useEffect, useRef, useState } from "react";
 import { API_BASE, exportPredictionReport, pngDataUrl, type PendingAudio, type PredictResult } from "../lib/api";
 import { MetricCard } from "./MetricCard";
+import { ConfidenceCalibrationPanel } from "./ConfidenceCalibrationPanel";
 import { RouterExplanationPanel } from "./RouterExplanationPanel";
 
 function formatLabel(label: string) {
@@ -185,6 +186,8 @@ export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, d
           </button>
         </div>
       </section>
+
+      <ConfidenceCalibrationPanel result={result} assessment={assessment} />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Primary Guess" value={formatLabel(result.top_label)} hint={`${(result.top_confidence * 100).toFixed(1)}% confidence`} accent />

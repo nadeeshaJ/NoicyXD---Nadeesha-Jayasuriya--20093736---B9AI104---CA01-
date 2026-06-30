@@ -1,4 +1,5 @@
 import type { ModelCompareResult } from "../lib/api";
+import { ComparisonWinnerCard } from "./ComparisonWinnerCard";
 
 function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
@@ -17,6 +18,8 @@ export function ModelComparisonPanel({ comparison }: Props) {
           All available models classified the same audio clip in <strong>{comparison.effective_mode}</strong> mode.
         </p>
       </div>
+
+      <ComparisonWinnerCard comparison={comparison} />
 
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">

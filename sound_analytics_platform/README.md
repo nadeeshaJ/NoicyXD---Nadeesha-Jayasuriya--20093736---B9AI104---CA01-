@@ -16,7 +16,7 @@ This folder contains the **web app** (React + FastAPI + Supabase). It sits insid
 - preprocessing and inference code (`src/`)
 - shared settings (`config/config.yaml`)
 
-**Technical reference:** [`PLATFORM_CURRENT_STATE.md`](PLATFORM_CURRENT_STATE.md)
+**Technical reference:** [`PLATFORM_CURRENT_STATE.md`](PLATFORM_CURRENT_STATE.md) · **Changes:** [`CHANGELOG.md`](CHANGELOG.md)
 
 | Layer | Technology | Folder |
 |-------|------------|--------|
@@ -30,14 +30,18 @@ This folder contains the **web app** (React + FastAPI + Supabase). It sits insid
 ## Features
 
 - **Urban / Animal / Auto-Router** processing modes  
+- **Showcase tab** — one-click curated demo scenarios  
 - **Router panel** — dual-expert scores and routing reason (auto mode)  
 - **Reliability labels** — High / Medium / Low  
+- **Confidence calibration** — thresholds and entropy in analysis reports  
+- **Comparison winner summary** — fastest, confidence, agreement on compare reports  
 - **Unknown / uncertain** when top probability is below 40%  
 - **Model selection** — Custom CNN, ResNet50, MobileNetV2 (urban)  
 - **Grad-CAM** overlays on Mel-spectrograms  
 - **Inference latency** and benchmark comparison in results  
 - **Prediction history** in Supabase (per browser session)  
 - **Analytics dashboard** — class/model distributions, latency trend  
+- **CNN Models tab** — urban + animal benchmarks, deployment profiles  
 - **ZIP report export** — JSON, CSV, waveform, Mel-spec, Grad-CAM PNGs  
 - **Dataset samples** — inference on UrbanSound8K / ESC-50 test clips  
 ### Deployed models (UrbanSound8K fold-10)
@@ -59,6 +63,7 @@ sound_analytics_platform/
 ├── README.md
 ├── USER_GUIDE.md
 ├── PLATFORM_CURRENT_STATE.md
+├── CHANGELOG.md
 ├── start_platform.ps1
 ├── backend/
 ├── frontend/
@@ -202,12 +207,13 @@ Expected: `"status":"ok"` and `"supabase_configured":true`.
 
 ## Using the application
 
-1. **Analyze Live** — upload a `.wav` file or record ~4 seconds from the microphone  
-2. Review validation preview (sample rate, duration, Mel normalization)  
-3. **Run Analysis** — view prediction, reliability, Grad-CAM, and benchmarks  
-4. **History** — past predictions from Supabase (per browser session)  
-5. **Analytics** — urban/animal event counts and latency trends  
-6. **Export Report** — download ZIP with summary + images  
+1. **Showcase** or **Analyze Live** — run a classification  
+2. Review validation preview (upload) or scenario card (Showcase)  
+3. **Run Analysis** — view prediction, calibration panel, Grad-CAM, benchmarks  
+4. **Compare All Models** — winner summary + per-model table  
+5. **History** — past predictions from Supabase (per browser session)  
+6. **Analytics** — class counts and latency trends  
+7. **Export Report** — download ZIP with summary + images  
 
 ---
 

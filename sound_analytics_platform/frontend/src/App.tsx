@@ -1,5 +1,4 @@
 import {
-  Activity,
   BarChart3,
   BrainCircuit,
   Database,
@@ -15,9 +14,11 @@ import { AnalyticsDashboardPanel } from "./components/AnalyticsDashboardPanel";
 import { AudioInputPanel } from "./components/AudioInputPanel";
 import { AudioPreviewPanel } from "./components/AudioPreviewPanel";
 import { DatasetsPanel } from "./components/DatasetsPanel";
+import { AppHelpBanner } from "./components/AppHelpBanner";
+import { ModelsPanel } from "./components/ModelsPanel";
+import { ShowcasePanel } from "./components/ShowcasePanel";
 import { ModelComparisonPanel } from "./components/ModelComparisonPanel";
 import { PredictionHistoryPanel } from "./components/PredictionHistoryPanel";
-import { WaveLoader } from "./components/WaveLoader";
 import {
   checkHealth,
   compareModels,
@@ -30,9 +31,11 @@ import {
   type PredictResult,
   type ProcessingMode,
 } from "./lib/api";
+import { WaveLoader } from "./components/WaveLoader";
+
 import { fetchBenchmarksFromSupabase, supabaseConfigured } from "./lib/supabase";
 
-type Tab = "analyze" | "datasets" | "analytics" | "history" | "models";
+type Tab = "analyze" | "datasets" | "showcase" | "analytics" | "history" | "models";
 
 const modeOptions: Array<{ id: ProcessingMode; label: string }> = [
   { id: "urban", label: "Urban Sound" },
@@ -150,6 +153,12 @@ export default function App() {
         submessage: "Applying Short-Time Fourier Transform & CNN Inference",
       };
     }
+    if (tab === "showcase" && loading) {
+      return {
+        message: "Running showcase scenario...",
+        submessage: "Inference on curated test clip",
+      };
+    }
     return {
       message: "Processing audio signals...",
       submessage: "Applying Short-Time Fourier Transform & CNN Inference",
@@ -252,6 +261,7 @@ export default function App() {
               {[
                 { id: "analyze", label: "Analyze Live", icon: Radar },
                 { id: "datasets", label: "Project Datasets", icon: FolderOpen },
+                { id: "showcase", label: "Showcase", icon: Sparkles },
                 { id: "analytics", label: "Analytics Dashboard", icon: BarChart3 },
                 { id: "history", label: "Prediction History", icon: History },
                 { id: "models", label: "CNN Models", icon: BrainCircuit },
@@ -366,6 +376,8 @@ export default function App() {
             </div>
           </header>
 
+          <AppHelpBanner />
+
           {loading || previewLoading ? (
             <WaveLoader 
               message={loaderCopy.message}
@@ -436,6 +448,24 @@ export default function App() {
             </div>
           ) : null}
 
+          {tab === "showcase" ? (
+            <div className={loading ? "hidden" : undefined}>
+              <ShowcasePanel
+                gradcam={gradcam}
+                disabled={loading}
+                onResult={(payload, sample) => {
+                  setResult(payload);
+                  setAnalysisAudio(null);
+                  setResultDatasetDomain((sample?.domain as "urban" | "animal") ?? null);
+                  setComparison(null);
+                  setError(null);
+                }}
+                onLoading={setLoading}
+                onError={setError}
+              />
+            </div>
+          ) : null}
+
           {tab === "analytics" ? <AnalyticsDashboardPanel /> : null}
 
           {tab === "history" ? (
@@ -445,48 +475,7 @@ export default function App() {
             />
           ) : null}
 
-          {tab === "models" ? (
-            <section className="grid gap-6 lg:grid-cols-3">
-              {benchmarks.map((row) => (
-                <div 
-                  key={row.model_key} 
-                  className={`glass-panel p-6 relative overflow-hidden border ${
-                    row.is_deployed ? "border-accent/40 bg-accent/[0.03] shadow-glow" : "border-white/[0.05]"
-                  }`}
-                >
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-accent/5 to-transparent pointer-events-none" />
-                  
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-lg font-bold text-white tracking-tight">{row.display_name}</div>
-                    {row.is_deployed ? (
-                      <span className="rounded-full bg-accent/25 border border-accent/30 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-accent-glow shadow-glow animate-pulse-slow">
-                        Active Expert
-                      </span>
-                    ) : null}
-                  </div>
-                  
-                  <div className="space-y-3.5 text-sm">
-                    <div className="flex justify-between border-b border-white/[0.05] pb-2">
-                      <span className="text-white/40">Test Accuracy</span>
-                      <span className="font-semibold text-white">{row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/[0.05] pb-2">
-                      <span className="text-white/40">Macro F1 Score</span>
-                      <span className="font-semibold text-white">{row.test_macro_f1 ? row.test_macro_f1.toFixed(3) : "—"}</span>
-                    </div>
-                    <div className="flex justify-between border-b border-white/[0.05] pb-2">
-                      <span className="text-white/40">Mean Latency</span>
-                      <span className="font-semibold text-white font-mono">{row.inference_ms_mean} ms</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/40">Checkpoint Size</span>
-                      <span className="font-semibold text-white font-mono">{row.model_file_size_mb} MB</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </section>
-          ) : null}
+          {tab === "models" ? <ModelsPanel benchmarks={benchmarks} /> : null}
         </main>
       </div>
 
