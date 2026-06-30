@@ -1,5 +1,6 @@
-import { Download, AlertCircle, CheckCircle2, Zap } from "lucide-react";
-import { exportPredictionReport, pngDataUrl, type PredictResult } from "../lib/api";
+import { Download, AlertCircle, CheckCircle2, Zap, Volume2, Square } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { API_BASE, exportPredictionReport, pngDataUrl, type PendingAudio, type PredictResult } from "../lib/api";
 import { MetricCard } from "./MetricCard";
 import { RouterExplanationPanel } from "./RouterExplanationPanel";
 
@@ -11,6 +12,8 @@ type Props = {
   result: PredictResult;
   benchmarks: any[];
   modelName: string;
+  pendingAudio?: PendingAudio | null;
+  datasetDomain?: "urban" | "animal" | null;
 };
 
 function reliabilityClass(level: string, isUnknown: boolean) {
@@ -20,9 +23,85 @@ function reliabilityClass(level: string, isUnknown: boolean) {
   return "border-status-error/30 bg-status-error/[0.02] text-status-error";
 }
 
-export function AnalysisResults({ result, benchmarks, modelName }: Props) {
+export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, datasetDomain }: Props) {
   const activeBenchmark = benchmarks.find((row) => row.model_key === (result.model_key ?? modelName));
   const assessment = result.assessment;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackError, setPlaybackError] = useState<string | null>(null);
+
+  const resolvedDatasetDomain =
+    datasetDomain ??
+    (result.input_source === "dataset" && result.effective_mode
+      ? (result.effective_mode as "urban" | "animal")
+      : null);
+  const isDatasetSample = result.input_source === "dataset" && Boolean(result.sample_id);
+  const canPlayDataset = isDatasetSample && Boolean(resolvedDatasetDomain);
+  const canPlayBlob = !isDatasetSample && Boolean(pendingAudio?.blob);
+  const canPlay = canPlayDataset || canPlayBlob;
+
+  useEffect(() => {
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
+
+  function releaseObjectUrl() {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  }
+
+  function stopPlayback() {
+    audioRef.current?.pause();
+    audioRef.current = null;
+    setIsPlaying(false);
+    releaseObjectUrl();
+  }
+
+  async function togglePlay() {
+    setPlaybackError(null);
+
+    if (isPlaying) {
+      stopPlayback();
+      return;
+    }
+
+    let src: string;
+    if (canPlayDataset && resolvedDatasetDomain && result.sample_id) {
+      src = `${API_BASE}/api/datasets/${resolvedDatasetDomain}/samples/${encodeURIComponent(result.sample_id)}/audio`;
+    } else if (canPlayBlob && pendingAudio?.blob) {
+      releaseObjectUrl();
+      src = URL.createObjectURL(pendingAudio.blob);
+      objectUrlRef.current = src;
+    } else {
+      return;
+    }
+
+    const audio = new Audio(src);
+    audioRef.current = audio;
+    audio.onended = () => stopPlayback();
+    audio.onerror = () => {
+      setPlaybackError("Could not play this audio clip.");
+      stopPlayback();
+    };
+
+    try {
+      await audio.play();
+      setIsPlaying(true);
+    } catch {
+      setPlaybackError("Playback blocked or unsupported format.");
+      stopPlayback();
+    }
+  }
+
   const isCorrect =
     result.ground_truth_label &&
     (result.top_label === result.ground_truth_label ||
@@ -72,7 +151,26 @@ export function AnalysisResults({ result, benchmarks, modelName }: Props) {
         <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-white/[0.01] to-transparent pointer-events-none" />
         <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
           <div className="space-y-1">
-            <div className="text-xs uppercase font-bold tracking-widest opacity-60">Classification Assessment</div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="text-xs uppercase font-bold tracking-widest opacity-60">Classification Assessment</div>
+              {canPlay ? (
+                <button
+                  type="button"
+                  className={`px-3 py-1 rounded-xl border text-[11px] font-bold transition flex items-center gap-1.5 ${
+                    isPlaying
+                      ? "bg-status-success/15 border-status-success/30 text-status-success shadow-glow animate-pulse"
+                      : "bg-white/[0.03] border-white/[0.05] text-white/70 hover:bg-white/[0.08]"
+                  }`}
+                  onClick={() => void togglePlay()}
+                >
+                  {isPlaying ? <Square size={10} className="fill-current" /> : <Volume2 size={10} />}
+                  {isPlaying ? "Stop Sound" : "Play Sound"}
+                </button>
+              ) : null}
+            </div>
+            {playbackError ? (
+              <p className="text-[11px] text-status-warning font-medium">{playbackError}</p>
+            ) : null}
             <div className="text-2xl font-extrabold text-white tracking-tight">{assessment.display_name}</div>
             <div className="text-xs opacity-80 font-medium">
               Confidence Score: {(assessment.confidence * 100).toFixed(1)}% · Reliability Rating: {assessment.reliability_level}

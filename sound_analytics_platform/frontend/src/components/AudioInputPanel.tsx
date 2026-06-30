@@ -1,5 +1,6 @@
 import { Mic, Square, Upload, FileAudio } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
+import { pickRecorderMimeType, recordingToWavBlob } from "../lib/audio";
 
 type Props = {
   onAudioSelected: (blob: Blob, source: "upload" | "microphone", filename?: string) => void;
@@ -25,15 +26,23 @@ export function AudioInputPanel({ onAudioSelected, disabled }: Props) {
     setError(null);
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const recorder = new MediaRecorder(stream);
+      const mimeType = pickRecorderMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
       chunksRef.current = [];
       recorder.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
       };
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         stream.getTracks().forEach((track) => track.stop());
-        const blob = new Blob(chunksRef.current, { type: "audio/wav" });
-        onAudioSelected(blob, "microphone", "recording.wav");
+        try {
+          const recorded = new Blob(chunksRef.current, {
+            type: recorder.mimeType || mimeType || "audio/webm",
+          });
+          const wavBlob = await recordingToWavBlob(recorded);
+          onAudioSelected(wavBlob, "microphone", "recording.wav");
+        } catch {
+          setError("Could not convert microphone recording to WAV. Try uploading a .wav file instead.");
+        }
       };
       mediaRecorderRef.current = recorder;
       recorder.start();

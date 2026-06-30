@@ -4,17 +4,19 @@
 **Student:** Nadeesha Jayasuriya (20093736)  
 **Project:** Mel-spectrogram CNN classification for urban and animal environmental sounds
 
-Production web application for uploading or recording audio, running trained PyTorch models, viewing explainability outputs, logging predictions to Supabase, and monitoring sound events over time.
+Web application for uploading or recording audio, running trained PyTorch models, viewing Grad-CAM outputs, logging predictions to Supabase, and viewing session history and analytics.
 
 ---
 
 ## Overview
 
-This folder contains the **deployable web app** (React + FastAPI + Supabase). It sits inside the full CA1 repository and uses the parent project for:
+This folder contains the **web app** (React + FastAPI + Supabase). It sits inside the full CA1 repository and uses the parent project for:
 
 - trained model checkpoints (`experiments/`)
 - preprocessing and inference code (`src/`)
 - shared settings (`config/config.yaml`)
+
+**Technical reference:** [`PLATFORM_CURRENT_STATE.md`](PLATFORM_CURRENT_STATE.md)
 
 | Layer | Technology | Folder |
 |-------|------------|--------|
@@ -27,18 +29,17 @@ This folder contains the **deployable web app** (React + FastAPI + Supabase). It
 
 ## Features
 
-- **Urban / Animal / Smart Auto-Router** processing modes  
-- **Scientific router panel** — dual-expert confidence, entropy, calibrated strength, routing reason  
-- **Reliability warnings** — High / Medium / Low confidence messaging  
-- **Unknown / uncertain** classification when top probability is below 40%  
+- **Urban / Animal / Auto-Router** processing modes  
+- **Router panel** — dual-expert scores and routing reason (auto mode)  
+- **Reliability labels** — High / Medium / Low  
+- **Unknown / uncertain** when top probability is below 40%  
 - **Model selection** — Custom CNN, ResNet50, MobileNetV2 (urban)  
-- **Grad-CAM** explainability overlays on Mel-spectrograms  
-- **Live inference latency** + static benchmark comparison cards  
-- **Supabase prediction history** with reliability and router metadata  
-- **Analytics dashboards** — urban/animal event summaries, latency trends  
-- **Exportable ZIP report** — JSON, CSV, waveform, Mel-spec, Grad-CAM PNGs  
-- **Dataset sample testing** — run inference on curated UrbanSound8K / ESC-50 clips  
-
+- **Grad-CAM** overlays on Mel-spectrograms  
+- **Inference latency** and benchmark comparison in results  
+- **Prediction history** in Supabase (per browser session)  
+- **Analytics dashboard** — class/model distributions, latency trend  
+- **ZIP report export** — JSON, CSV, waveform, Mel-spec, Grad-CAM PNGs  
+- **Dataset samples** — inference on UrbanSound8K / ESC-50 test clips  
 ### Deployed models (UrbanSound8K fold-10)
 
 | Model | Accuracy | Macro F1 |
@@ -57,6 +58,7 @@ MobileNetV2 is the default deployed model for both urban and cross-domain routin
 sound_analytics_platform/
 ├── README.md
 ├── USER_GUIDE.md
+├── PLATFORM_CURRENT_STATE.md
 ├── start_platform.ps1
 ├── backend/
 ├── frontend/
@@ -111,8 +113,8 @@ Without real `.pt` files, the API may load random/mock weights and predictions w
 2. Run migrations **in order**:
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_prediction_metadata.sql`
+   - `supabase/migrations/002_dataset_input_source.sql`
 3. Confirm tables exist: `predictions`, `model_benchmarks`, `sound_classes`
-
 Project URL used in this submission: `https://fhpcrtnhqrmjsdcrpqzm.supabase.co`
 
 ---
@@ -148,7 +150,7 @@ Never commit real keys to Git. Use `.env` locally only.
 
 ## Run locally
 
-### Option A — start script (recommended on Windows)
+### Option A — start script (Windows)
 
 From this folder:
 
@@ -181,7 +183,9 @@ Then open:
 | URL | Purpose |
 |-----|---------|
 | http://localhost:5173 | Web application |
-| http://localhost:8000/docs | Swagger API docs |
+| http://localhost:8000/docs | **Swagger UI** — interactive API docs |
+| http://localhost:8000/redoc | **ReDoc** — readable API reference |
+| http://localhost:8000/openapi.json | OpenAPI 3 schema (import into Postman) |
 | http://localhost:8000/api/health | Health check |
 
 **Important:** start the frontend with `npm run dev` only. Do not pass host/port as bare arguments to Vite (that breaks the dev server).
@@ -219,7 +223,10 @@ Expected: `"status":"ok"` and `"supabase_configured":true`.
 | GET | `/api/analytics/dashboard` | Monitoring metrics |
 | GET | `/api/models` | Model benchmark table |
 
-Full interactive docs: **http://localhost:8000/docs**
+Full interactive docs:
+
+- **Swagger UI:** http://localhost:8000/docs — try endpoints in the browser
+- **ReDoc:** http://localhost:8000/redoc — printable reference layout
 
 ---
 

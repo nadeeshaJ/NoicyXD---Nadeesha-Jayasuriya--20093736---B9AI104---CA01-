@@ -120,6 +120,24 @@ export type ModelCompareResult = {
   comparisons: ModelCompareItem[];
 };
 
+export type PredictionHistoryRow = {
+  id: string;
+  session_id: string;
+  processing_mode: string;
+  routed_domain: string | null;
+  model_key: string;
+  input_source: string;
+  original_filename: string | null;
+  top_label: string;
+  top_confidence: number;
+  inference_ms: number | null;
+  reliability_level: string | null;
+  is_unknown: boolean | null;
+  display_label: string | null;
+  gradcam_enabled: boolean;
+  created_at: string;
+};
+
 export type AnalyticsDashboard = {
   total_predictions: number;
   avg_latency_ms: number | null;
@@ -179,13 +197,16 @@ export async function fetchBenchmarksFromApi(): Promise<ModelBenchmarkRow[]> {
   return response.json();
 }
 
-export async function fetchHistoryFromApi() {
-  const response = await fetch(`${API_BASE}/api/predictions`, {
+export async function fetchHistoryFromApi(limit = 50): Promise<PredictionHistoryRow[]> {
+  const response = await fetch(`${API_BASE}/api/predictions?limit=${limit}`, {
     headers: {
       "X-Session-Id": getSessionId(),
     },
   });
-  if (!response.ok) throw new Error("Failed to load prediction history.");
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || "Failed to load prediction history.");
+  }
   return response.json();
 }
 
@@ -295,7 +316,10 @@ export async function fetchAnalyticsDashboard(): Promise<AnalyticsDashboard> {
   const response = await fetch(`${API_BASE}/api/analytics/dashboard`, {
     headers: { "X-Session-Id": getSessionId() },
   });
-  if (!response.ok) throw new Error("Failed to load analytics dashboard.");
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || "Failed to load analytics dashboard.");
+  }
   return response.json();
 }
 

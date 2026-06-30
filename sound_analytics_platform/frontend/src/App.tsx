@@ -9,19 +9,19 @@ import {
   Sparkles,
   Waves,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AnalysisResults } from "./components/AnalysisResults";
 import { AnalyticsDashboardPanel } from "./components/AnalyticsDashboardPanel";
 import { AudioInputPanel } from "./components/AudioInputPanel";
 import { AudioPreviewPanel } from "./components/AudioPreviewPanel";
 import { DatasetsPanel } from "./components/DatasetsPanel";
 import { ModelComparisonPanel } from "./components/ModelComparisonPanel";
+import { PredictionHistoryPanel } from "./components/PredictionHistoryPanel";
 import { WaveLoader } from "./components/WaveLoader";
 import {
   checkHealth,
   compareModels,
   fetchBenchmarksFromApi,
-  fetchHistoryFromApi,
   predictAudio,
   previewAudio,
   type AudioPreview,
@@ -30,8 +30,7 @@ import {
   type PredictResult,
   type ProcessingMode,
 } from "./lib/api";
-import { getSessionId } from "./lib/session";
-import { fetchBenchmarksFromSupabase, fetchHistoryFromSupabase, supabaseConfigured } from "./lib/supabase";
+import { fetchBenchmarksFromSupabase, supabaseConfigured } from "./lib/supabase";
 
 type Tab = "analyze" | "datasets" | "analytics" | "history" | "models";
 
@@ -47,8 +46,10 @@ const modelOptions = [
   { id: "custom_cnn", label: "Custom CNN" },
 ];
 
-function formatLabel(label: string) {
-  return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+const animalModelOptions = modelOptions.filter((option) => option.id === "mobilenetv2");
+
+function modelOptionsForMode(mode: ProcessingMode) {
+  return mode === "animal" ? animalModelOptions : modelOptions;
 }
 
 const getModeColorClass = (m: string) => {
@@ -69,13 +70,16 @@ export default function App() {
   const [modelName, setModelName] = useState("mobilenetv2");
   const [gradcam, setGradcam] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [datasetLoadingAction, setDatasetLoadingAction] = useState<"analyze" | "compare" | null>(null);
+  const [datasetsDomain, setDatasetsDomain] = useState<"urban" | "animal">("urban");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingAudio, setPendingAudio] = useState<PendingAudio | null>(null);
+  const [analysisAudio, setAnalysisAudio] = useState<PendingAudio | null>(null);
   const [preview, setPreview] = useState<AudioPreview | null>(null);
   const [result, setResult] = useState<PredictResult | null>(null);
+  const [resultDatasetDomain, setResultDatasetDomain] = useState<"urban" | "animal" | null>(null);
   const [comparison, setComparison] = useState<ModelCompareResult | null>(null);
-  const [history, setHistory] = useState<any[]>([]);
   const [benchmarks, setBenchmarks] = useState<any[]>([]);
   const [apiStatus, setApiStatus] = useState<string>("Checking API...");
   const [checkpointsReady, setCheckpointsReady] = useState(true);
@@ -104,26 +108,62 @@ export default function App() {
     }
   }
 
-  async function loadHistory() {
-    try {
-      setHistory(supabaseConfigured ? await fetchHistoryFromSupabase(getSessionId()) : await fetchHistoryFromApi());
-    } catch {
-      try {
-        setHistory(await fetchHistoryFromApi());
-      } catch {
-        setHistory([]);
-      }
+  useEffect(() => {
+    const effectiveMode = tab === "datasets" ? datasetsDomain : mode;
+    const allowed = modelOptionsForMode(effectiveMode).map((option) => option.id);
+    if (!allowed.includes(modelName)) {
+      setModelName("mobilenetv2");
     }
+  }, [tab, mode, datasetsDomain, modelName]);
+
+  const effectiveModeForModels = tab === "datasets" ? datasetsDomain : mode;
+  const activeModelOptions = modelOptionsForMode(effectiveModeForModels);
+  const modelSelectLocked = effectiveModeForModels === "animal";
+  const showInferenceControls = tab === "analyze" || tab === "datasets";
+  const showProcessingMode = tab === "analyze";
+
+  const handleDatasetsDomainChange = useCallback((domain: "urban" | "animal") => {
+    setDatasetsDomain(domain);
+  }, []);
+
+  const handleDatasetLoading = useCallback((isLoading: boolean, action?: "analyze" | "compare") => {
+    setLoading(isLoading);
+    setDatasetLoadingAction(isLoading ? (action ?? null) : null);
+  }, []);
+
+  function getLoaderCopy() {
+    if (previewLoading) {
+      return {
+        message: "Running validation preview...",
+        submessage: "Checking format, duration, and signal quality",
+      };
+    }
+    if (tab === "datasets" && loading) {
+      if (datasetLoadingAction === "compare") {
+        return {
+          message: "Comparing models on sample...",
+          submessage: "Running inference across MobileNetV2, ResNet50, and Custom CNN",
+        };
+      }
+      return {
+        message: "Analyzing dataset sample...",
+        submessage: "Applying Short-Time Fourier Transform & CNN Inference",
+      };
+    }
+    return {
+      message: "Processing audio signals...",
+      submessage: "Applying Short-Time Fourier Transform & CNN Inference",
+    };
   }
 
-  useEffect(() => {
-    if (tab === "history") loadHistory();
-  }, [tab, result]);
+  const loaderCopy = getLoaderCopy();
 
   async function handleAudioSelected(blob: Blob, source: "upload" | "microphone", filename?: string) {
     setPreviewLoading(true);
     setError(null);
     setResult(null);
+    setResultDatasetDomain(null);
+    setAnalysisAudio(null);
     setComparison(null);
     const pending = { blob, source, filename };
     setPendingAudio(pending);
@@ -148,6 +188,7 @@ export default function App() {
     if (!pendingAudio) return;
     setLoading(true);
     setError(null);
+    setResultDatasetDomain(null);
     try {
       setResult(
         await predictAudio({
@@ -159,6 +200,11 @@ export default function App() {
           gradcam,
         }),
       );
+      setAnalysisAudio({
+        blob: pendingAudio.blob,
+        source: pendingAudio.source,
+        filename: pendingAudio.filename,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Prediction failed.");
     } finally {
@@ -254,37 +300,49 @@ export default function App() {
               </div>
 
               {/* Dynamic Control Card inside Header */}
+              {showInferenceControls ? (
               <div className="flex flex-col sm:flex-row lg:flex-col gap-3 bg-brand-dark/50 border border-white/[0.06] rounded-2xl p-3 shrink-0 lg:w-64 relative z-10 w-full lg:w-auto">
-                {/* Processing Mode */}
-                <div className="flex-1">
-                  <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/40">Processing Mode</label>
-                  <select 
-                    className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition cursor-pointer ${getModeColorClass(mode)}`}
-                    value={mode} 
-                    onChange={(e) => setMode(e.target.value as ProcessingMode)}
-                  >
-                    {modeOptions.map((option) => (
-                      <option key={option.id} value={option.id} className="bg-brand-dark text-white">
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {showProcessingMode ? (
+                  <div className="flex-1">
+                    <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/40">Processing Mode</label>
+                    <select 
+                      className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition cursor-pointer ${getModeColorClass(mode)}`}
+                      value={mode} 
+                      onChange={(e) => setMode(e.target.value as ProcessingMode)}
+                    >
+                      {modeOptions.map((option) => (
+                        <option key={option.id} value={option.id} className="bg-brand-dark text-white">
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
 
                 {/* Backend Model */}
                 <div className="flex-1">
                   <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-wider text-white/40">Backend Model</label>
-                  <select 
-                    className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition cursor-pointer ${getModelColorClass(modelName)}`}
-                    value={modelName} 
+                  <select
+                    className={`w-full border rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-accent/20 transition ${modelSelectLocked ? "cursor-default opacity-90" : "cursor-pointer"} ${getModelColorClass(modelName)}`}
+                    value={modelName}
+                    disabled={modelSelectLocked}
                     onChange={(e) => setModelName(e.target.value)}
                   >
-                    {modelOptions.map((option) => (
+                    {activeModelOptions.map((option) => (
                       <option key={option.id} value={option.id} className="bg-brand-dark text-white">
                         {option.label}
                       </option>
                     ))}
                   </select>
+                  {effectiveModeForModels === "animal" ? (
+                    <p className="mt-1.5 text-[10px] text-white/40 leading-snug">
+                      Animal mode uses the ESC-50 MobileNetV2 expert only.
+                    </p>
+                  ) : tab !== "datasets" && mode === "auto" ? (
+                    <p className="mt-1.5 text-[10px] text-white/40 leading-snug">
+                      Urban routing can use any model; animal routing uses MobileNetV2.
+                    </p>
+                  ) : null}
                 </div>
 
                 {/* Grad-CAM explainability */}
@@ -304,13 +362,14 @@ export default function App() {
                   </label>
                 </div>
               </div>
+              ) : null}
             </div>
           </header>
 
           {loading || previewLoading ? (
             <WaveLoader 
-              message={previewLoading ? "Running validation preview..." : "Processing audio signals..."}
-              submessage="Applying Short-Time Fourier Transform & CNN Inference"
+              message={loaderCopy.message}
+              submessage={loaderCopy.submessage}
             />
           ) : null}
           
@@ -357,81 +416,33 @@ export default function App() {
           ) : null}
 
           {tab === "datasets" ? (
-            <DatasetsPanel
-              mode={mode}
-              modelName={modelName}
-              gradcam={gradcam}
-              onResult={(payload) => {
-                setResult(payload);
-                setComparison(null);
-                setError(null);
-              }}
-              onComparison={setComparison}
-              onLoading={setLoading}
-              onError={setError}
-            />
+            <div className={loading ? "hidden" : undefined}>
+              <DatasetsPanel
+                modelName={modelName}
+                gradcam={gradcam}
+                disabled={loading}
+                onResult={(payload, sample) => {
+                  setResult(payload);
+                  setAnalysisAudio(null);
+                  setResultDatasetDomain((sample?.domain as "urban" | "animal") ?? null);
+                  setComparison(null);
+                  setError(null);
+                }}
+                onComparison={setComparison}
+                onLoading={handleDatasetLoading}
+                onDomainChange={handleDatasetsDomainChange}
+                onError={setError}
+              />
+            </div>
           ) : null}
 
           {tab === "analytics" ? <AnalyticsDashboardPanel /> : null}
 
           {tab === "history" ? (
-            <section className="glass-panel p-6">
-              <div className="mb-6 flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-white">Prediction History Logs</h2>
-                  <p className="text-xs text-white/50">Stored predictions in Supabase linked to your session.</p>
-                </div>
-                <button className="btn-secondary" onClick={loadHistory}>
-                  Refresh Logs
-                </button>
-              </div>
-              {history.length === 0 ? (
-                <p className="text-white/40 text-sm p-6 text-center border border-dashed border-white/5 rounded-2xl">No predictions stored yet in this session.</p>
-              ) : (
-                <div className="overflow-x-auto rounded-xl border border-white/[0.05]">
-                  <table className="min-w-full text-left text-sm">
-                    <thead className="bg-white/[0.02] text-white/40 font-semibold">
-                      <tr>
-                        <th className="px-4 py-3">Timestamp</th>
-                        <th className="px-4 py-3">Source</th>
-                        <th className="px-4 py-3">Mode</th>
-                        <th className="px-4 py-3">Top Guess</th>
-                        <th className="px-4 py-3">Confidence</th>
-                        <th className="px-4 py-3">Reliability</th>
-                        <th className="px-4 py-3 text-right">Inference</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/[0.05]">
-                      {history.map((row) => (
-                        <tr key={row.id} className="hover:bg-white/[0.02] text-white/70 transition">
-                          <td className="px-4 py-4 whitespace-nowrap text-xs text-white/50">{new Date(row.created_at).toLocaleString()}</td>
-                          <td className="px-4 py-4 whitespace-nowrap capitalize text-xs">
-                            <span className="px-2 py-1 rounded bg-white/[0.04] border border-white/[0.05]">
-                              {row.input_source ?? "upload"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap capitalize text-xs">{row.processing_mode}</td>
-                          <td className="px-4 py-4 whitespace-nowrap font-medium text-white">{formatLabel(row.display_label || row.top_label)}</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-xs">{(Number(row.top_confidence) * 100).toFixed(1)}%</td>
-                          <td className="px-4 py-4 whitespace-nowrap text-xs">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase ${
-                              row.reliability_level === 'High' ? 'bg-status-success/10 text-status-success border border-status-success/20' :
-                              row.reliability_level === 'Medium' ? 'bg-status-warning/10 text-status-warning border border-status-warning/20' :
-                              'bg-status-error/10 text-status-error border border-status-error/20'
-                            }`}>
-                              {row.reliability_level ?? "Low"}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-right text-xs font-mono text-white/50">
-                            {row.inference_ms ? `${Number(row.inference_ms).toFixed(1)} ms` : "—"}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </section>
+            <PredictionHistoryPanel
+              active={tab === "history"}
+              refreshKey={result?.saved_prediction_id}
+            />
           ) : null}
 
           {tab === "models" ? (
@@ -499,11 +510,19 @@ export default function App() {
             <div className="mt-2">
               {result && (
                 <div>
-                  <div className="mb-6 relative">
-                    <h2 className="text-2xl font-black text-white tracking-tight">Classification Analysis Report</h2>
-                    <p className="text-xs text-white/50 mt-1">Deep Learning Inference outputs & heatmaps for sample {result.sample_id || "live input"}</p>
+                  <div className="mb-6 relative flex flex-wrap items-start justify-between gap-4 pr-12">
+                    <div>
+                      <h2 className="text-2xl font-black text-white tracking-tight">Classification Analysis Report</h2>
+                      <p className="text-xs text-white/50 mt-1">Deep Learning Inference outputs & heatmaps for sample {result.sample_id || "live input"}</p>
+                    </div>
                   </div>
-                  <AnalysisResults result={result} benchmarks={benchmarks} modelName={modelName} />
+                  <AnalysisResults
+                    result={result}
+                    benchmarks={benchmarks}
+                    modelName={modelName}
+                    pendingAudio={analysisAudio}
+                    datasetDomain={resultDatasetDomain}
+                  />
                 </div>
               )}
 

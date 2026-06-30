@@ -81,27 +81,62 @@ class InferenceService:
         return base64.b64encode(buffer.read()).decode("utf-8")
 
     @staticmethod
+    def _probe_to_metrics(probe: dict[str, Any], strength_score: float) -> dict[str, Any]:
+        from src.confidence import normalized_entropy
+
+        probs = probe.get("probabilities") or {}
+        entropy = normalized_entropy(probs) if probs else 1.0
+        if entropy < 0.35:
+            uncertainty = "Low"
+        elif entropy < 0.70:
+            uncertainty = "Medium"
+        else:
+            uncertainty = "High"
+        return {
+            "top_label": probe["top_label"],
+            "top_confidence": float(probe["top_confidence"]),
+            "entropy_normalized": float(entropy),
+            "uncertainty_level": uncertainty,
+            "strength_score": float(strength_score),
+        }
+
+    @staticmethod
     def _serialize_router(router_info: dict[str, Any]) -> dict[str, Any]:
-        urban = router_info["urban_metrics"]
-        animal = router_info["animal_metrics"]
+        urban_probe = router_info["urban_probe"]
+        animal_probe = router_info["animal_probe"]
+        urban_score = float(
+            router_info.get("urban_strength", router_info.get("urban_score", 0.0))
+        )
+        animal_score = float(
+            router_info.get("animal_strength", router_info.get("animal_score", 0.0))
+        )
+        urban_metrics = router_info.get("urban_metrics") or InferenceService._probe_to_metrics(
+            urban_probe, urban_score
+        )
+        animal_metrics = router_info.get("animal_metrics") or InferenceService._probe_to_metrics(
+            animal_probe, animal_score
+        )
+        chosen_metrics = urban_metrics if router_info["domain"] == "urban" else animal_metrics
         return {
             "domain": router_info["domain"],
             "reason": router_info["reason"],
             "primary_reason": router_info.get("primary_reason", router_info["reason"]),
             "hint_note": router_info.get("hint_note"),
-            "urban_score": router_info["urban_strength"],
-            "animal_score": router_info["animal_strength"],
-            "confidence_gap": router_info["confidence_gap"],
-            "selected_uncertainty": router_info["selected_uncertainty"],
-            "urban_metrics": urban,
-            "animal_metrics": animal,
+            "urban_score": urban_score,
+            "animal_score": animal_score,
+            "confidence_gap": abs(urban_score - animal_score),
+            "selected_uncertainty": router_info.get(
+                "selected_uncertainty", chosen_metrics["uncertainty_level"]
+            ),
+            "urban_metrics": urban_metrics,
+            "animal_metrics": animal_metrics,
             "urban_probe": {
-                "top_label": router_info["urban_probe"]["top_label"],
-                "top_confidence": router_info["urban_probe"]["top_confidence"],
+                "top_label": urban_probe["top_label"],
+                "top_confidence": float(urban_probe["top_confidence"]),
             },
             "animal_probe": {
-                "top_label": router_info["animal_probe"]["top_label"],
-                "top_confidence": router_info["animal_probe"]["top_confidence"],
+                "top_label": animal_probe["top_label"],
+                "top_confidence": float(animal_probe["top_confidence"]),
             },
         }
 
@@ -127,6 +162,7 @@ class InferenceService:
                 audio_bytes,
                 self.device,
                 self.cfg,
+                margin=float(self.cfg.get("app", {}).get("router_margin", 0.03)),
             )
             effective_mode = router_info["domain"]
 
@@ -205,6 +241,7 @@ class InferenceService:
             audio_bytes,
             self.device,
             self.cfg,
+            margin=float(self.cfg.get("app", {}).get("router_margin", 0.03)),
         )
         return router_info["domain"], router_info
 

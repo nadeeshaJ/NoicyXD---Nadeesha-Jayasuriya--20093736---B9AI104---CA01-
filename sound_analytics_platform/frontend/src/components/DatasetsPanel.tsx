@@ -10,17 +10,19 @@ import {
   type DatasetSample,
   type ModelCompareResult,
   type PredictResult,
-  type ProcessingMode,
   API_BASE,
 } from "../lib/api";
 
+type DatasetLoadingAction = "analyze" | "compare";
+
 type Props = {
-  mode: ProcessingMode;
   modelName: string;
   gradcam: boolean;
-  onResult: (result: PredictResult) => void;
+  disabled?: boolean;
+  onResult: (result: PredictResult, sample?: DatasetSample) => void;
   onComparison: (comparison: ModelCompareResult) => void;
-  onLoading: (loading: boolean) => void;
+  onLoading: (loading: boolean, action?: DatasetLoadingAction) => void;
+  onDomainChange: (domain: "urban" | "animal") => void;
   onError: (message: string | null) => void;
 };
 
@@ -28,9 +30,22 @@ function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison, onLoading, onError }: Props) {
+export function DatasetsPanel({
+  modelName,
+  gradcam,
+  disabled = false,
+  onResult,
+  onComparison,
+  onLoading,
+  onDomainChange,
+  onError,
+}: Props) {
   const [overview, setOverview] = useState<DatasetOverview[]>([]);
   const [domain, setDomain] = useState<"urban" | "animal">("urban");
+
+  useEffect(() => {
+    onDomainChange(domain);
+  }, [domain, onDomainChange]);
   const [labelFilter, setLabelFilter] = useState("");
   const [curated, setCurated] = useState<DatasetSample[]>([]);
   const [samples, setSamples] = useState<DatasetSample[]>([]);
@@ -47,17 +62,18 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
   const activeOverview = overview.find((item) => item.domain === domain);
 
   async function analyzeSample(sample: DatasetSample) {
-    onLoading(true);
+    onLoading(true, "analyze");
     onError(null);
     try {
+      const sampleDomain = sample.domain as "urban" | "animal";
       const result = await predictFromSample({
-        domain: sample.domain as "urban" | "animal",
+        domain: sampleDomain,
         sampleId: sample.sample_id,
-        mode: mode === "auto" ? "auto" : (sample.domain as "urban" | "animal"),
+        mode: sampleDomain,
         modelName,
         gradcam,
       });
-      onResult(result);
+      onResult(result, sample);
     } catch (err) {
       onError(err instanceof Error ? err.message : "Failed to analyze dataset sample.");
     } finally {
@@ -66,14 +82,15 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
   }
 
   async function compareSample(sample: DatasetSample) {
-    onLoading(true);
+    onLoading(true, "compare");
     onError(null);
     try {
+      const sampleDomain = sample.domain as "urban" | "animal";
       onComparison(
         await compareSampleModels({
-          domain: sample.domain as "urban" | "animal",
+          domain: sampleDomain,
           sampleId: sample.sample_id,
-          mode,
+          mode: sampleDomain,
         }),
       );
     } catch (err) {
@@ -141,6 +158,7 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                     : "border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/[0.08]"
                 }`}
                 onClick={() => {
+                  if (disabled) return;
                   setDomain(item.domain as "urban" | "animal");
                   setLabelFilter("");
                 }}
@@ -183,7 +201,8 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                       ? "bg-accent text-white border-accent shadow-glow" 
                       : "bg-white/[0.02] border-white/[0.05] text-white/60 hover:text-white hover:border-white/10 hover:bg-white/[0.04]"
                   }`}
-                  onClick={() => setLabelFilter(isActive ? "" : label)}
+                  onClick={() => !disabled && setLabelFilter(isActive ? "" : label)}
+                  disabled={disabled}
                 >
                   {formatLabel(label)}
                 </button>
@@ -215,6 +234,7 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                       : "bg-white/[0.03] border-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10"
                   }`}
                   onClick={() => togglePlaySample(sample)}
+                  disabled={disabled}
                   title={playingId === sample.sample_id ? "Stop audio" : "Listen to audio"}
                 >
                   {playingId === sample.sample_id ? <Square size={14} className="fill-current" /> : <Volume2 size={14} />}
@@ -224,6 +244,7 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                 <button 
                   className="btn-primary flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5" 
                   onClick={() => analyzeSample(sample)}
+                  disabled={disabled}
                 >
                   <Play size={11} className="fill-current" />
                   Analyze
@@ -233,6 +254,7 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                 <button 
                   className="p-2.5 rounded-xl border border-white/[0.05] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10 transition flex items-center justify-center shrink-0" 
                   onClick={() => compareSample(sample)}
+                  disabled={disabled}
                   title="Compare across all models"
                 >
                   <BarChart size={14} />
@@ -266,6 +288,7 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                             : "bg-white/[0.03] border-white/[0.05] text-white/40 hover:text-white hover:border-white/10"
                         }`}
                         onClick={() => togglePlaySample(sample)}
+                        disabled={disabled}
                         title={playingId === sample.sample_id ? "Stop audio" : "Play audio"}
                       >
                         {playingId === sample.sample_id ? <Square size={11} className="fill-current" /> : <Volume2 size={11} />}
@@ -276,10 +299,10 @@ export function DatasetsPanel({ mode, modelName, gradcam, onResult, onComparison
                   <td className="px-4 py-3 font-semibold text-white">{formatLabel(sample.label)}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2.5 justify-end">
-                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => analyzeSample(sample)}>
+                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => analyzeSample(sample)} disabled={disabled}>
                         Analyze
                       </button>
-                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => compareSample(sample)}>
+                      <button className="btn-secondary py-1.5 px-3 text-xs" onClick={() => compareSample(sample)} disabled={disabled}>
                         Compare
                       </button>
                     </div>

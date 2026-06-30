@@ -47,7 +47,7 @@ export function AudioPreviewPanel({ preview, pendingAudio, onRunAnalysis, onComp
     <section className="glass-panel p-6 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-64 h-64 bg-glowGradient pointer-events-none z-0" />
       
-      <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-6">
+      <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
         <div>
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-bold text-white tracking-tight">Pre-Inference Validation Checks</h2>
@@ -69,18 +69,18 @@ export function AudioPreviewPanel({ preview, pendingAudio, onRunAnalysis, onComp
             Inspect the signal characteristics and checks before dispatching the tensor to CNN pipelines.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
-          <button 
-            className="btn-primary" 
-            disabled={disabled || !preview.valid} 
+        <div className="flex flex-row flex-nowrap items-center gap-3 shrink-0">
+          <button
+            className="btn-primary whitespace-nowrap"
+            disabled={disabled || !preview.valid}
             onClick={onRunAnalysis}
           >
             Run Classifier
             <ArrowRight size={15} />
           </button>
-          <button 
-            className="btn-secondary" 
-            disabled={disabled || !preview.valid} 
+          <button
+            className="btn-secondary whitespace-nowrap"
+            disabled={disabled || !preview.valid}
             onClick={onCompareModels}
           >
             Compare All Models

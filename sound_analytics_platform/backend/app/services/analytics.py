@@ -36,6 +36,10 @@ def _parse_ts(value: str) -> datetime:
     return datetime.fromisoformat(value.replace("Z", "+00:00"))
 
 
+def _format_chart_name(name: str) -> str:
+    return name.replace("_", " ").strip().title()
+
+
 def build_dashboard_metrics(session_id: str, limit: int = 100) -> dict[str, Any]:
     rows = fetch_recent_predictions(session_id, limit=limit)
     if not rows:
@@ -88,8 +92,9 @@ def build_dashboard_metrics(session_id: str, limit: int = 100) -> dict[str, Any]
             )
 
         label = str(row.get("top_label") or "")
+        chart_label = str(row.get("display_label") or label)
         if label:
-            class_counter[label] += 1
+            class_counter[chart_label] += 1
             domain = row.get("routed_domain") or row.get("processing_mode")
             if label in URBAN_MONITOR_CLASSES or domain == "urban":
                 if label in URBAN_MONITOR_CLASSES:
@@ -112,7 +117,7 @@ def build_dashboard_metrics(session_id: str, limit: int = 100) -> dict[str, Any]
             unknown_count += 1
 
     def counter_to_list(counter: Counter[str]) -> list[dict[str, Any]]:
-        return [{"name": name, "count": count} for name, count in counter.most_common()]
+        return [{"name": _format_chart_name(name), "count": count} for name, count in counter.most_common()]
 
     return {
         "total_predictions": len(rows),

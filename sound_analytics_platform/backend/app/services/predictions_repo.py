@@ -2,11 +2,37 @@ from __future__ import annotations
 
 from typing import Any
 
-from app.services.supabase_client import get_supabase_client
-
+from postgrest.exceptions import APIError
 
 from app.services.prediction_payload import build_save_row
 from app.services.supabase_client import get_supabase_client
+
+EXTENDED_PREDICTION_FIELDS = frozenset(
+    {
+        "reliability_level",
+        "is_unknown",
+        "display_label",
+        "entropy_normalized",
+        "router_metrics",
+    }
+)
+
+
+def _is_missing_column_error(exc: Exception) -> bool:
+    if isinstance(exc, APIError):
+        code = getattr(exc, "code", None)
+        if code == "PGRST204":
+            return True
+        message = str(getattr(exc, "message", "") or exc).lower()
+        return "could not find" in message and "column" in message
+    message = str(exc).lower()
+    return "could not find" in message and "column" in message
+
+
+def _insert_prediction_row(row: dict[str, Any]) -> dict[str, Any]:
+    client = get_supabase_client()
+    response = client.table("predictions").insert(row).execute()
+    return response.data[0] if response.data else row
 
 
 def save_prediction_record(
@@ -29,7 +55,6 @@ def save_prediction_record(
     device_used: str | None = None,
     user_id: str | None = None,
 ) -> dict[str, Any]:
-    client = get_supabase_client()
     row = build_save_row(
         session_id=session_id,
         processing_mode=processing_mode,
@@ -50,8 +75,13 @@ def save_prediction_record(
     )
     if router_reason and not row.get("router_reason"):
         row["router_reason"] = router_reason
-    response = client.table("predictions").insert(row).execute()
-    return response.data[0] if response.data else row
+    try:
+        return _insert_prediction_row(row)
+    except Exception as exc:
+        if not _is_missing_column_error(exc):
+            raise
+        base_row = {key: value for key, value in row.items() if key not in EXTENDED_PREDICTION_FIELDS}
+        return _insert_prediction_row(base_row)
 
 
 def fetch_recent_predictions(session_id: str, limit: int = 20) -> list[dict[str, Any]]:

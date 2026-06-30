@@ -1,7 +1,7 @@
 # Sound Analytics Platform — User Guide
 
-Complete guide for using the **Sound Analytics Platform** (`sound_analytics_platform/`).  
-For setup and deployment, see `README.md`.
+Complete guide for the **Sound Analytics Platform** (`sound_analytics_platform/`).  
+Setup: `README.md`. Technical reference: `PLATFORM_CURRENT_STATE.md`.
 
 ---
 
@@ -10,7 +10,7 @@ For setup and deployment, see `README.md`.
 1. [What this system does](#1-what-this-system-does)
 2. [How it works (architecture)](#2-how-it-works-architecture)
 3. [Getting started](#3-getting-started)
-4. [Sidebar controls](#4-sidebar-controls)
+4. [Header controls](#4-header-controls)
 5. [Tab: Analyze Live](#5-tab-analyze-live)
 6. [Tab: Project Datasets](#6-tab-project-datasets)
 7. [Tab: Analytics](#7-tab-analytics)
@@ -20,7 +20,7 @@ For setup and deployment, see `README.md`.
 11. [Processing modes explained](#11-processing-modes-explained)
 12. [Supabase database](#12-supabase-database)
 13. [Troubleshooting](#13-troubleshooting)
-14. [Presentation demo script](#14-presentation-demo-script)
+14. [Demo walkthrough](#14-demo-walkthrough)
 
 ---
 
@@ -74,7 +74,7 @@ The platform does **not** replace your CA1 training pipeline — it **uses** tho
 
 - Python environment with PyTorch (parent project)
 - Node.js (for frontend)
-- Supabase migrations applied (you've done this)
+- Supabase migrations applied
 - Trained model checkpoints in `experiments/`
 
 ### Start the system
@@ -97,28 +97,35 @@ npm run dev
 
 ### Supabase migrations (one-time)
 
-If not done yet, run both scripts in **Supabase Dashboard → SQL Editor**:
+If not done yet, run all scripts in **Supabase Dashboard → SQL Editor** (in order):
 
 1. `supabase/migrations/001_initial_schema.sql`
-2. `supabase/migrations/002_dataset_input_source.sql`
+2. `supabase/migrations/002_prediction_metadata.sql`
+3. `supabase/migrations/002_dataset_input_source.sql`
 
 ---
 
-## 4. Sidebar controls
+## 4. Header controls (context-sensitive)
 
-These settings apply to **both** live analysis and dataset analysis.
+These settings appear in the **top header** on inference tabs only.
+
+| Tab | Processing Mode | Backend Model | Grad-CAM |
+|-----|:---------------:|:-------------:|:--------:|
+| Analyze Live | ✓ | ✓ | ✓ |
+| Project Datasets | ✗ | ✓ | ✓ |
+| Analytics / History / CNN Models | ✗ | ✗ | ✗ |
 
 | Control | Options | Purpose |
 |---------|---------|---------|
-| **Processing Mode** | Urban Sound / Animal Vocalization / Smart Auto-Router | Which expert model(s) to use |
+| **Processing Mode** | Urban Sound / Animal Vocalization / Smart Auto-Router | Which expert model(s) to use *(Analyze Live only)* |
 | **Backend Model** | MobileNetV2 / ResNet50 / Custom CNN | Which CNN runs inference |
 | **Grad-CAM** | On / Off | Show visual explainability heatmap |
-| **System Status** | Online/Offline, Supabase | Health check |
+| **System Status** (sidebar) | Online/Offline, Supabase | Health check |
 
-**Recommended defaults for demos:**
-- Mode: **Urban Sound** or **Smart Auto-Router**
-- Model: **MobileNetV2 (Deployed)**
-- Grad-CAM: **On**
+**Default settings:**
+- Mode: Urban Sound or Smart Auto-Router
+- Model: MobileNetV2 (Deployed)
+- Grad-CAM: On
 
 ---
 
@@ -128,7 +135,7 @@ Use this tab for **new audio** — files from your computer or live microphone.
 
 ### Step-by-step
 
-1. Select mode and model in the sidebar
+1. Set mode and model in the header
 2. Upload a WAV file or record 4 seconds from mic
 3. **Validation preview appears automatically** with:
    - Pass/fail checklist (sample rate, mono, duration, normalization)
@@ -147,7 +154,7 @@ Use this tab for **new audio** — files from your computer or live microphone.
 
 ## 6. Tab: Project Datasets
 
-Use this tab to analyze clips from your **existing CA1 datasets** — the same test splits used in evaluation.
+Use this tab to run inference on clips from the project test splits (UrbanSound8K and ESC-50 animals).
 
 ### What you see
 
@@ -158,9 +165,9 @@ Use this tab to analyze clips from your **existing CA1 datasets** — the same t
 **Class filter chips**
 - Click a class name (e.g. `Siren`, `Cow`) to filter the sample table
 
-**Recommended demo samples**
-- Pre-selected clips from your test split (siren, dog bark, cow, rooster, etc.)
-- Click **Analyze sample** for a one-click demo
+**Recommended samples**
+- Pre-selected clips from the test split
+- **Analyze** runs inference on the selected row
 
 **Browse test split samples**
 - Table of real test clips with filename and ground-truth label
@@ -170,26 +177,25 @@ Use this tab to analyze clips from your **existing CA1 datasets** — the same t
 
 After analyzing a dataset clip, the results show:
 
-- **Known label** (from dataset metadata)
-- **Predicted label** (from model)
-- **Match / mismatch** — useful for error analysis demos
+- **Known label** (dataset metadata)
+- **Predicted label** (model output)
+- **Match / mismatch** indicator
 
 Example: Analyze a siren clip → ground truth `siren`, prediction `siren` at 94% → **correct**.
 
-### When to use this tab vs Analyze Live
+### When to use each tab
 
-| Situation | Use |
+| Situation | Tab |
 |-----------|-----|
-| Presentation with known correct answers | **Project Datasets** |
-| Testing your own recording | **Analyze Live** |
-| Showing cross-domain routing (dog bark urban vs animal) | **Project Datasets** + Smart Auto-Router |
-| Live audience interaction | **Analyze Live** (mic or upload) |
+| Clip with known ground-truth label | Project Datasets |
+| Your own recording or upload | Analyze Live |
+| Test auto-routing on fixed samples | Project Datasets + Smart Auto-Router |
 
 ---
 
 ## 7. Tab: Analytics
 
-Live **MLOps telemetry dashboard** powered by Supabase prediction logs.
+Session metrics from Supabase prediction logs.
 
 ### Metrics shown
 
@@ -197,7 +203,7 @@ Live **MLOps telemetry dashboard** powered by Supabase prediction logs.
 |--------|-------------|
 | Total predictions | Count for your browser session |
 | Avg latency | Mean inference time (ms) |
-| Last hour activity | Recent utilization proxy |
+| Last hour activity | Predictions in the last 60 minutes |
 
 ### Charts
 
@@ -213,25 +219,30 @@ Click **Refresh** after running new analyses to update charts.
 
 ## 8. Tab: History
 
-Shows all predictions saved to **Supabase** for your browser session.
+Predictions saved to Supabase for the current browser session.
+
+Loads via the backend API. Shows a loader while fetching; empty state if nothing is logged yet.
 
 | Column | Meaning |
 |--------|---------|
 | Time | When analysis ran |
 | Source | `upload`, `microphone`, or `dataset` |
 | Mode | urban / animal / auto |
-| Prediction | Top predicted class |
-| Confidence | Model certainty |
+| Model | CNN used |
+| Top Guess | Predicted class |
+| Confidence | Model probability |
+| Reliability | High / Medium / Low |
+| Inference | Latency in ms |
 
-Click **Refresh** after new analyses.
+Click **Refresh Logs** after new analyses.
 
-Predictions are tied to a session ID stored in your browser (localStorage). Clearing browser data starts a new session.
+Session ID is stored in browser `localStorage`. Clearing site data starts a new session.
 
 ---
 
 ## 9. Tab: Models
 
-Compares all three CNN architectures using benchmark data from training/evaluation:
+Benchmark stats from training/evaluation (fold-10 test set). Read-only — does not run inference.
 
 | Model | Urban accuracy | Checkpoint | Role |
 |-------|----------------|------------|------|
@@ -239,9 +250,7 @@ Compares all three CNN architectures using benchmark data from training/evaluati
 | ResNet50 | ~81% | 90 MB | Transfer learning |
 | **MobileNetV2** | **~83%** | **9 MB** | **Deployed model** |
 
-Each card shows accuracy, macro F1, latency, parameter count, and deployment badge.
-
-Use this tab to explain **why MobileNetV2 was chosen** for production deployment.
+Each card shows accuracy, macro F1, latency, and checkpoint size. MobileNetV2 is marked as the deployed urban model.
 
 ---
 
@@ -274,9 +283,9 @@ Shows known label vs prediction and whether they match.
 
 Shows urban vs animal probe scores and routing reason.
 
-### Efficiency vs accuracy trade-off
+### Efficiency vs accuracy
 
-Side-by-side comparison of all three models — supports deployment justification.
+Side-by-side benchmark cards for all three urban models.
 
 ### Top 3 predictions
 
@@ -284,7 +293,7 @@ Progress bars for the three highest-confidence classes.
 
 ### All class probabilities
 
-Full softmax output for every class — useful for showing uncertainty (e.g. dog bark vs gun shot confusion).
+Full softmax output for every class.
 
 ### Same-clip multi-model comparison
 
@@ -329,7 +338,7 @@ Available via **Compare All Models** (Analyze Live) or **Compare** (Project Data
 | `predictions` | Every analysis — label, confidence, mode, model, latency |
 | `model_benchmarks` | Static stats for Custom CNN, ResNet50, MobileNetV2 |
 | `sound_classes` | Urban + animal class registry |
-| `profiles` | User profiles (for future auth) |
+| `profiles` | User profiles (optional auth) |
 
 ### What gets saved per prediction
 
@@ -360,25 +369,17 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 
 ---
 
-## 14. Presentation demo script
+## 14. Demo walkthrough
 
-Suggested 5-minute live demo flow:
+Example order for a short live walkthrough:
 
-1. **Open app** → show sidebar (mode, model, Grad-CAM)
-2. **Project Datasets tab** → pick UrbanSound8K → analyze **siren** demo sample
-3. Point to **ground truth match**, **Mel-spec**, **Grad-CAM** heatmap
-4. Switch to **Smart Auto-Router** → analyze **dog bark** (urban) vs **dog** (animal) to show routing
-5. **Models tab** → explain MobileNetV2 deployment choice (83% acc, 9 MB)
-6. **Analyze Live** → upload or record a clip from audience (optional)
-7. **History tab** → show Supabase persistence
-
-### Key sentences for Q&A
-
-- *"We convert audio to Mel-spectrogram images so we can use standard CNN image classifiers."*
-- *"Three models compared: Custom CNN baseline, ResNet50, MobileNetV2 — MobileNetV2 won on accuracy and efficiency."*
-- *"Grad-CAM shows which frequency bands and time regions drove the prediction."*
-- *"The Smart Auto-Router runs dual experts and picks urban vs animal automatically."*
-- *"Every prediction is persisted to Supabase for audit and history."*
+1. Open app — note header controls (mode, model, Grad-CAM) on Analyze tab
+2. **Project Datasets** → UrbanSound8K → analyze a siren sample
+3. Check ground-truth match, Mel-spectrogram, and Grad-CAM panel
+4. Switch to **Smart Auto-Router** → compare urban dog_bark vs animal dog samples
+5. **CNN Models** tab — benchmark numbers for the three urban architectures
+6. **Analyze Live** — upload or record a clip
+7. **History** and **Analytics** — logged predictions and charts
 
 ---
 
@@ -386,18 +387,17 @@ Suggested 5-minute live demo flow:
 
 | Action | Where |
 |--------|-------|
-| Upload new audio | Analyze Live tab |
+| Upload new audio | Analyze Live |
 | Pre-inference validation | Automatic after upload/record |
 | Compare all 3 models on same clip | Analyze Live → Compare All Models |
-| Test on project data | Project Datasets tab |
-| Live telemetry charts | Analytics tab |
+| Test on project data | Project Datasets |
+| Session charts | Analytics |
 | Compare models on dataset clip | Project Datasets → Compare |
-| View past runs | History tab |
-| Change CNN | Sidebar → Backend Model |
-| Enable XAI | Sidebar → Grad-CAM checkbox |
+| View past runs | History |
+| Change CNN | Header → Backend Model (Analyze or Datasets tab) |
+| Grad-CAM | Header checkbox (Analyze or Datasets tab) |
 | API docs | http://localhost:8000/docs |
 
 ---
 
-*Sound Analytics Platform — Deep Learning CA1 (B9AI104)*  
-*Location: `sound_analytics_platform/` inside the CA1 repository root*
+*B9AI104 Deep Learning CA1 — `sound_analytics_platform/`*

@@ -6,31 +6,31 @@ from pydantic import BaseModel, Field
 
 
 class PredictionItem(BaseModel):
-    label: str
-    confidence: float
+    label: str = Field(description="Sound class key, e.g. `siren` or `dog_bark`.")
+    confidence: float = Field(description="Softmax probability in [0, 1].", ge=0.0, le=1.0)
 
 
 class RouterProbe(BaseModel):
-    top_label: str
-    top_confidence: float
+    top_label: str = Field(description="Top class from the expert probe.")
+    top_confidence: float = Field(description="Probe softmax confidence.", ge=0.0, le=1.0)
 
 
 class RouterExpertMetrics(BaseModel):
     top_label: str
-    top_confidence: float
-    entropy_normalized: float
-    uncertainty_level: str
-    strength_score: float
+    top_confidence: float = Field(ge=0.0, le=1.0)
+    entropy_normalized: float = Field(description="Normalized Shannon entropy in [0, 1].", ge=0.0, le=1.0)
+    uncertainty_level: str = Field(description="Low, Medium, or High uncertainty band.")
+    strength_score: float = Field(description="Domain-adjusted routing strength score.")
 
 
 class RouterInfo(BaseModel):
-    domain: str
-    reason: str
+    domain: str = Field(description="Selected domain after routing: `urban` or `animal`.")
+    reason: str = Field(description="Human-readable routing explanation.")
     primary_reason: str | None = None
     hint_note: str | None = None
-    urban_score: float
-    animal_score: float
-    confidence_gap: float
+    urban_score: float = Field(description="Calibrated urban expert strength.")
+    animal_score: float = Field(description="Calibrated animal expert strength.")
+    confidence_gap: float = Field(description="Absolute gap between urban and animal scores.")
     selected_uncertainty: str
     urban_metrics: RouterExpertMetrics
     animal_metrics: RouterExpertMetrics
@@ -39,12 +39,12 @@ class RouterInfo(BaseModel):
 
 
 class AssessmentInfo(BaseModel):
-    confidence: float
-    entropy_normalized: float
+    confidence: float = Field(ge=0.0, le=1.0)
+    entropy_normalized: float = Field(ge=0.0, le=1.0)
     uncertainty_level: str
-    reliability_level: str
+    reliability_level: str = Field(description="High, Medium, or Low reliability rating.")
     reliability_message: str
-    is_unknown: bool
+    is_unknown: bool = Field(description="True when confidence is below the unknown threshold (40%).")
     display_label: str
     display_name: str
     best_guess_label: str
@@ -52,39 +52,39 @@ class AssessmentInfo(BaseModel):
 
 
 class PredictResponse(BaseModel):
-    processing_mode: str
-    effective_mode: str
-    model_key: str
+    processing_mode: str = Field(description="Mode requested by the client: urban, animal, or auto.")
+    effective_mode: str = Field(description="Domain used after routing: urban or animal.")
+    model_key: str = Field(description="CNN architecture that produced the prediction.")
     top_label: str
-    top_confidence: float
-    predictions: list[PredictionItem]
-    probabilities: dict[str, float]
-    inference_ms: float | None = None
-    device_used: str | None = None
+    top_confidence: float = Field(ge=0.0, le=1.0)
+    predictions: list[PredictionItem] = Field(description="Top-k class predictions (default k=3).")
+    probabilities: dict[str, float] = Field(description="Full softmax distribution over all classes.")
+    inference_ms: float | None = Field(default=None, description="End-to-end inference latency in milliseconds.")
+    device_used: str | None = Field(default=None, description="Compute device, e.g. `cuda` or `cpu`.")
     assessment: AssessmentInfo
-    waveform_png: str
-    mel_png: str
-    rgb_png: str
-    gradcam_png: str | None = None
+    waveform_png: str = Field(description="Base64-encoded waveform PNG.")
+    mel_png: str = Field(description="Base64-encoded normalized Mel-spectrogram PNG.")
+    rgb_png: str = Field(description="Base64-encoded 224×224 RGB model input PNG.")
+    gradcam_png: str | None = Field(default=None, description="Base64-encoded Grad-CAM overlay PNG.")
     gradcam_summary: dict[str, Any] | None = None
-    router: RouterInfo | None = None
-    benchmark: dict[str, Any] | None = None
-    saved_prediction_id: str | None = None
-    ground_truth_label: str | None = None
-    sample_id: str | None = None
-    input_source: str | None = None
+    router: RouterInfo | None = Field(default=None, description="Present when `processing_mode=auto`.")
+    benchmark: dict[str, Any] | None = Field(default=None, description="Static benchmark row for the model used.")
+    saved_prediction_id: str | None = Field(default=None, description="Supabase row ID if saved successfully.")
+    ground_truth_label: str | None = Field(default=None, description="Dataset label when predicting from a sample.")
+    sample_id: str | None = Field(default=None, description="Dataset WAV filename when applicable.")
+    input_source: str | None = Field(default=None, description="upload, microphone, or dataset.")
 
 
 class CheckpointStatus(BaseModel):
     path: str
     model_key: str
-    status: str
+    status: str = Field(description="ok, missing, invalid, or suspect.")
     size_mb: float | None = None
     message: str
 
 
 class HealthResponse(BaseModel):
-    status: str
+    status: str = Field(description="`ok` when primary MobileNetV2 checkpoint is valid, else `degraded`.")
     device: str
     supabase_configured: bool
     ml_project_root: str
@@ -101,7 +101,7 @@ class ModelBenchmark(BaseModel):
     inference_ms_mean: float
     test_accuracy: float | None = None
     test_macro_f1: float | None = None
-    is_deployed: bool = False
+    is_deployed: bool = Field(default=False, description="True for the production MobileNetV2 model.")
     notes: str | None = None
 
 
@@ -113,7 +113,7 @@ class ValidationCheck(BaseModel):
 
 
 class AudioPreviewResponse(BaseModel):
-    valid: bool
+    valid: bool = Field(description="True when all preprocessing validation checks pass.")
     filename: str | None = None
     input_source: str
     original_duration_sec: float

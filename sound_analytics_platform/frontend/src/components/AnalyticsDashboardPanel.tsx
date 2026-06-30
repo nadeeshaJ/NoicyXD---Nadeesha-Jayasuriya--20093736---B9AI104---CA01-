@@ -11,8 +11,10 @@ import {
   YAxis,
 } from "recharts";
 import { fetchAnalyticsDashboard, type AnalyticsDashboard } from "../lib/api";
+import { supabaseConfigured } from "../lib/supabase";
 import { MetricCard } from "./MetricCard";
-import { Activity, RefreshCw } from "lucide-react";
+import { WaveLoader } from "./WaveLoader";
+import { BarChart3, RefreshCw } from "lucide-react";
 
 function DistributionChart({
   title,
@@ -33,8 +35,8 @@ function DistributionChart({
       {data.length === 0 ? (
         <p className="text-xs text-white/40 p-6 text-center border border-dashed border-white/5 rounded-2xl relative z-10">No data available yet.</p>
       ) : (
-        <div className="h-56 relative z-10">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="h-56 relative z-10 min-w-0">
+          <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <BarChart data={data}>
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -43,7 +45,15 @@ function DistributionChart({
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.03)" />
-              <XAxis dataKey="name" tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }}
+                axisLine={{ stroke: "rgba(255,255,255,0.05)" }}
+                interval={0}
+                angle={-20}
+                textAnchor="end"
+                height={50}
+              />
               <YAxis tick={{ fill: "rgba(255,255,255,0.4)", fontSize: 10 }} axisLine={{ stroke: "rgba(255,255,255,0.05)" }} allowDecimals={false} />
               <Tooltip 
                 contentStyle={{ 
@@ -64,14 +74,19 @@ function DistributionChart({
 
 export function AnalyticsDashboardPanel() {
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
+    setLoading(true);
     setError(null);
     try {
       setData(await fetchAnalyticsDashboard());
     } catch (err) {
+      setData(null);
       setError(err instanceof Error ? err.message : "Failed to load analytics.");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -79,22 +94,32 @@ export function AnalyticsDashboardPanel() {
     load();
   }, []);
 
+  if (loading) {
+    return (
+      <WaveLoader
+        message="Loading analytics dashboard..."
+        submessage="Aggregating session telemetry from prediction logs"
+      />
+    );
+  }
+
   if (error) {
     return (
-      <div className="glass-panel border-status-error/30 bg-status-error/5 p-5 text-status-error text-sm font-medium flex items-center gap-3">
-        <span className="h-2 w-2 rounded-full bg-status-error shadow-[0_0_10px_#f43f5e] shrink-0"></span>
-        {error}
+      <div className="space-y-4">
+        <div className="glass-panel border-status-error/30 bg-status-error/5 p-5 text-status-error text-sm font-medium flex items-center gap-3">
+          <span className="h-2 w-2 rounded-full bg-status-error shadow-[0_0_10px_#f43f5e] shrink-0"></span>
+          {error}
+        </div>
+        <button className="btn-secondary py-2 text-xs" onClick={load}>
+          <RefreshCw size={13} className="mr-1.5 inline" />
+          Retry
+        </button>
       </div>
     );
   }
 
   if (!data) {
-    return (
-      <div className="glass-panel p-12 text-center text-white/40 text-sm flex flex-col items-center justify-center gap-4">
-        <Activity size={32} className="text-accent animate-pulse" />
-        <span>Loading operational telemetry logs from database...</span>
-      </div>
-    );
+    return null;
   }
 
   const latencyTrend = data.latency_trend.map((point, index) => ({
@@ -103,17 +128,39 @@ export function AnalyticsDashboardPanel() {
     label: point.label,
   }));
 
+  const isEmpty = data.total_predictions === 0;
+
   return (
     <div className="space-y-6">
+      {isEmpty ? (
+        <div className="glass-panel p-8 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-full bg-glowGradient pointer-events-none z-0" />
+          <div className="relative z-10 flex flex-col items-center gap-3 max-w-lg mx-auto">
+            <BarChart3 size={36} className="text-white/20" />
+            <h3 className="text-lg font-bold text-white">No session telemetry yet</h3>
+            <p className="text-xs text-white/50 leading-relaxed">
+              Run predictions from <span className="text-white/70">Analyze Live</span> or
+              {" "}<span className="text-white/70">Project Datasets</span> to populate this dashboard.
+              Each saved inference adds latency trends, class distributions, and monitoring summaries for your browser session.
+            </p>
+            {!supabaseConfigured ? (
+              <p className="text-[11px] text-status-warning/90 leading-relaxed">
+                Supabase is not configured in the frontend env — the backend still logs predictions when API keys are set server-side.
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       <section className="glass-panel p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-glowGradient pointer-events-none z-0" />
         
         <div className="mb-6 flex items-center justify-between relative z-10">
           <div>
             <h2 className="text-xl font-bold text-white tracking-tight">Telemetry Operational Dashboard</h2>
-            <p className="text-xs text-white/50 leading-relaxed">Live MLOps telemetry aggregated from Supabase logs for this browser session.</p>
+            <p className="text-xs text-white/50 leading-relaxed">Live MLOps telemetry aggregated from prediction logs for this browser session.</p>
           </div>
-          <button className="btn-secondary py-2 text-xs" onClick={load}>
+          <button className="btn-secondary py-2 text-xs" onClick={load} disabled={loading}>
             <RefreshCw size={13} className="mr-1.5" />
             Sync Logs
           </button>
@@ -139,8 +186,8 @@ export function AnalyticsDashboardPanel() {
         {latencyTrend.length === 0 ? (
           <p className="text-xs text-white/40 p-6 text-center border border-dashed border-white/5 rounded-2xl">Perform predictions to populate latency charts.</p>
         ) : (
-          <div className="h-64 relative z-10">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-64 relative z-10 min-w-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <LineChart data={latencyTrend}>
                 <defs>
                   <linearGradient id="latencyGlow" x1="0" y1="0" x2="0" y2="1">
