@@ -105,6 +105,7 @@ If not done yet, run all scripts in **Supabase Dashboard → SQL Editor** (in or
 1. `supabase/migrations/001_initial_schema.sql`
 2. `supabase/migrations/002_prediction_metadata.sql`
 3. `supabase/migrations/002_dataset_input_source.sql`
+4. `supabase/migrations/003_ground_truth_audit.sql` *(optional but recommended for History audit persistence)*
 
 ---
 
@@ -269,10 +270,27 @@ Predictions saved to Supabase for the current browser session.
 
 Loads via the backend API. Shows a loader while fetching; empty state if nothing is logged yet.
 
+### Audit filters
+
+Filter chips above the table:
+
+| Filter | Shows |
+|--------|--------|
+| **All** | Every logged prediction |
+| **Dataset audits** | Rows with a known ground-truth label (Showcase / Datasets) |
+| **Correct** | Prediction matches ground truth |
+| **Mismatches** | Prediction ≠ ground truth — use this for error analysis |
+
+Summary line example: `Dataset audits: 4 correct · 1 mismatch.`
+
+Upload and microphone runs appear under **All** only (no ground truth to compare).
+
 | Column | Meaning |
 |--------|---------|
 | Time | When analysis ran |
 | Source | `upload`, `microphone`, or `dataset` |
+| Ground truth | Known label from dataset metadata (— if N/A) |
+| Audit | **Match** / **Mismatch** / **N/A** |
 | Mode | urban / animal / auto |
 | Model | CNN used |
 | Top Guess | Predicted class |
@@ -327,65 +345,61 @@ Benchmark stats from training/evaluation. Read-only — does not run inference.
 
 After any analysis (live or dataset), you see:
 
-### Metric cards (top row)
+### Classification Assessment (summary)
 
-| Card | Meaning |
-|------|---------|
-| Top Prediction | Winning class + confidence % |
-| Live Latency | Actual inference time (ms) vs benchmark |
-| Model Size | Checkpoint file size |
-| Saved To DB | Whether result was stored in Supabase |
+Top-level prediction, confidence, reliability message, and **Export Archive ZIP**.
 
-### Visual panels (three columns)
+### Explainable AI (main transparency section)
 
-| Panel | What it shows |
-|-------|---------------|
-| **Raw Waveform** | Amplitude over time |
-| **Mel-Spectrogram** | Frequency content (what the model "sees" before RGB conversion) |
-| **Grad-CAM Overlay** | Where the CNN focused (warm = important regions) |
+One consolidated block with:
+
+| Part | What it shows |
+|------|----------------|
+| **Narrative summary** | Plain-English explanation of prediction, Grad-CAM, and router (if auto) |
+| **Play Sound** | Hear the clip while reviewing the report |
+| **Confidence calibration** | 40% / 70% thresholds, entropy, top-1 vs top-2 gap |
+| **Visualizations** | Waveform, Mel-spectrogram, Grad-CAM (or RGB input if Grad-CAM off) |
+| **Smart domain router** | Urban vs animal probe scores (auto mode only) |
+| **Top-3 distribution** | Softmax bars for leading classes |
 
 ### Ground truth box (dataset only)
 
-Shows known label vs prediction and whether they match.
+Above the assessment block. Shows known label vs prediction and **Match** / **Mismatch**.
 
-### Confidence calibration
+### Metric cards
 
-Bar showing top-1 confidence with 40% (unknown) and 70% (high reliability) markers. Also shows top-1 vs top-2 gap, normalized entropy, and reliability label.
-
-### Smart Auto-Router box (auto mode only)
-
-Shows urban vs animal probe scores and routing reason.
+| Card | Meaning |
+|------|---------|
+| Primary Guess | Winning class + confidence % |
+| Inference Latency | Actual time (ms) vs benchmark |
+| Entropy Rate | Uncertainty level |
+| Supabase Sync | Whether result was stored |
 
 ### Efficiency vs accuracy
 
-Side-by-side benchmark cards for all three urban models.
-
-### Top 3 predictions
-
-Progress bars for the three highest-confidence classes.
-
-### All class probabilities
-
-Full softmax output for every class.
+Side-by-side benchmark cards for all three urban models (when benchmarks loaded).
 
 ### Same-clip multi-model comparison
 
-**Winner summary** (four cards): fastest model, highest confidence, label agreement %, suggested pick.
+Opens from **Compare All Models** (Analyze Live) or **Compare** (Project Datasets).
 
-Table below compares all models on one clip:
-- Prediction and confidence per model
-- Live latency vs benchmark latency
-- Checkpoint size
+**Explainable AI · Model comparison** blurb at the top:
+- Per-model predictions and confidences
+- Label agreement % and disagreement note
+- Fastest model, highest confidence, suggested pick
+- **Play Sound** to verify by ear
 
-Available via **Compare All Models** (Analyze Live) or **Compare** (Project Datasets).
+**Winner summary** (four cards): fastest, highest confidence, agreement %, suggested pick.
+
+Table below compares all models on one clip (prediction, latency, checkpoint size).
 
 ### Help banner
 
-Dismissible bar under the header with a short tab map. Reappears only if you clear site data (`sap-help-dismissed` in localStorage).
+Dismissible bar under the header with a short tab map. Hidden in **Presentation mode**. Reappears only if you clear site data (`sap-help-dismissed` in localStorage).
 
 ### Presentation mode
 
-Toggle in the sidebar under **System Status**. Enlarges typography, calms panel styling, and hides the help banner for live demos. Preference stored in `localStorage` (`sap-presentation-mode`).
+Toggle in sidebar → System Status. Larger typography and calmer layout for live demos (`sap-presentation-mode` in localStorage).
 
 ---
 
@@ -429,6 +443,7 @@ Toggle in the sidebar under **System Status**. Enlarges typography, calms panel 
 - Model used
 - Input source (upload / microphone / dataset)
 - Top label and full probability JSON
+- Ground truth label, sample ID, dataset domain *(dataset runs, migration 003)*
 - Inference latency
 - Router reason (if auto mode)
 - Timestamp
@@ -452,6 +467,8 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 
 | Session export empty | Run at least one prediction with `save_to_db`; check backend is online |
 | Router Lab empty | Run Smart Auto-Router on Analyze, Datasets, or Showcase first |
+| History audit shows N/A | Run Showcase or Datasets (not upload-only); apply migration `003_ground_truth_audit.sql` for persistence |
+| Play Sound missing | Ensure audio context exists (upload blob or dataset sample with `sample_id`) |
 
 ---
 
@@ -461,13 +478,15 @@ Example order for a short walkthrough:
 
 1. Dismiss or read the help banner under the header (hidden in presentation mode)
 2. **Showcase** → Run **Auto-router · urban dog bark** scenario
-3. **Router Lab** → review routing explanation; try **Rerun as Urban** / **Rerun as Animal**
-4. **Project Datasets** → analyze a clip; check ground truth
-5. **Analyze Live** → Compare All Models → winner summary cards
-6. **Session Timeline** → review chronological log → **Export session ZIP**
-7. **CNN Models** → urban + animal benchmarks
-8. **History** and **Analytics** after a few runs
-9. Toggle **Presentation mode** in the sidebar for a demo layout
+3. In the report → scroll to **Explainable AI** → read narrative → **Play Sound**
+4. **Router Lab** → review routing; try **Rerun as Urban** / **Rerun as Animal**
+5. **Project Datasets** → analyze a clip; check ground truth match box
+6. **Analyze Live** → **Compare All Models** → read **Explainable AI · Model comparison** blurb
+7. **Session Timeline** → review log → **Export session ZIP**
+8. **History** → filter **Mismatches** to review wrong dataset predictions
+9. **CNN Models** → urban + animal benchmarks
+10. **Analytics** after several runs
+11. Toggle **Presentation mode** in the sidebar for demo layout
 
 ---
 
@@ -478,6 +497,8 @@ Example order for a short walkthrough:
 | One-click demo | Showcase tab |
 | Session story + ZIP export | Session Timeline tab |
 | Router what-if experiments | Router Lab tab |
+| Hear clip in any report | Play Sound in Explainable AI sections |
+| Filter wrong dataset predictions | History → Mismatches |
 | Demo / presentation layout | Sidebar → Presentation mode |
 | Upload new audio | Analyze Live |
 | Pre-inference validation | Automatic after upload/record |

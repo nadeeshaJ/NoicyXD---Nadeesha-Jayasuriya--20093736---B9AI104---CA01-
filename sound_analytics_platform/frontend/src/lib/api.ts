@@ -61,6 +61,7 @@ export type PredictResult = {
   ground_truth_label?: string | null;
   sample_id?: string | null;
   input_source?: string | null;
+  dataset_domain?: "urban" | "animal" | null;
 };
 
 export type DatasetOverview = {
@@ -118,6 +119,9 @@ export type ModelCompareItem = {
 export type ModelCompareResult = {
   effective_mode: string;
   comparisons: ModelCompareItem[];
+  sample_id?: string | null;
+  dataset_domain?: "urban" | "animal" | null;
+  input_source?: string | null;
 };
 
 export type PredictionHistoryRow = {
@@ -136,6 +140,11 @@ export type PredictionHistoryRow = {
   display_label: string | null;
   gradcam_enabled: boolean;
   created_at: string;
+  ground_truth_label?: string | null;
+  sample_id?: string | null;
+  dataset_domain?: "urban" | "animal" | null;
+  has_ground_truth?: boolean;
+  audit_match?: boolean | null;
 };
 
 export type AnalyticsDashboard = {

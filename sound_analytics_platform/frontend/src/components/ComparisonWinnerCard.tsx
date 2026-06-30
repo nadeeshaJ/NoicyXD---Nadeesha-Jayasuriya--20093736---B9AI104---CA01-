@@ -1,32 +1,9 @@
 import { Gauge, Target, Timer, Users } from "lucide-react";
 import type { ModelCompareResult } from "../lib/api";
+import { buildComparisonSummary } from "../lib/comparisonSummary";
 
 function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function buildSummary(comparison: ModelCompareResult) {
-  const rows = comparison.comparisons;
-  if (rows.length === 0) return null;
-
-  const withLatency = rows.filter((r) => r.inference_ms != null);
-  const fastest = withLatency.length
-    ? withLatency.reduce((a, b) => ((a.inference_ms ?? Infinity) < (b.inference_ms ?? Infinity) ? a : b))
-    : null;
-
-  const mostConfident = rows.reduce((a, b) => (a.top_confidence >= b.top_confidence ? a : b));
-
-  const labelCounts = new Map<string, number>();
-  for (const row of rows) {
-    labelCounts.set(row.top_label, (labelCounts.get(row.top_label) ?? 0) + 1);
-  }
-  const majorityCount = Math.max(...labelCounts.values());
-  const agreementPct = Math.round((majorityCount / rows.length) * 100);
-
-  const deployed = rows.find((r) => r.model_key === "mobilenetv2") ?? mostConfident;
-  const recommended = comparison.effective_mode === "animal" ? deployed : (fastest && fastest.model_key === "mobilenetv2" ? fastest : deployed);
-
-  return { fastest, mostConfident, agreementPct, recommended };
 }
 
 function WinnerTile({
@@ -53,7 +30,7 @@ function WinnerTile({
 }
 
 export function ComparisonWinnerCard({ comparison }: { comparison: ModelCompareResult }) {
-  const summary = buildSummary(comparison);
+  const summary = buildComparisonSummary(comparison);
   if (!summary) return null;
 
   const { fastest, mostConfident, agreementPct, recommended } = summary;

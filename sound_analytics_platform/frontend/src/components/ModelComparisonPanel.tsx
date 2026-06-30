@@ -1,15 +1,32 @@
 import type { ModelCompareResult } from "../lib/api";
+import { ComparisonExplainabilityBlurb } from "./ComparisonExplainabilityBlurb";
 import { ComparisonWinnerCard } from "./ComparisonWinnerCard";
-
-function formatLabel(label: string) {
-  return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
-}
+import { type ReportAudioSource } from "./PlaySoundButton";
 
 type Props = {
   comparison: ModelCompareResult;
+  audioSource?: ReportAudioSource | null;
 };
 
-export function ModelComparisonPanel({ comparison }: Props) {
+function buildComparisonAudioSource(
+  comparison: ModelCompareResult,
+  audioSource?: ReportAudioSource | null,
+): ReportAudioSource {
+  const datasetDomain =
+    audioSource?.datasetDomain ??
+    (comparison.dataset_domain as "urban" | "animal" | undefined) ??
+    null;
+
+  return {
+    pendingAudio: audioSource?.pendingAudio ?? null,
+    datasetDomain,
+    sampleId: audioSource?.sampleId ?? comparison.sample_id ?? null,
+  };
+}
+
+export function ModelComparisonPanel({ comparison, audioSource }: Props) {
+  const playback = buildComparisonAudioSource(comparison, audioSource);
+
   return (
     <section className="glass-panel p-5">
       <div className="mb-4">
@@ -18,6 +35,8 @@ export function ModelComparisonPanel({ comparison }: Props) {
           All available models classified the same audio clip in <strong>{comparison.effective_mode}</strong> mode.
         </p>
       </div>
+
+      <ComparisonExplainabilityBlurb comparison={comparison} audioSource={playback} />
 
       <ComparisonWinnerCard comparison={comparison} />
 
@@ -37,7 +56,7 @@ export function ModelComparisonPanel({ comparison }: Props) {
             {comparison.comparisons.map((row, index) => (
               <tr key={row.model_key} className={`border-t border-white/10 ${index === 0 ? "bg-accent/5" : ""}`}>
                 <td className="px-3 py-3 font-medium text-white">{row.display_name}</td>
-                <td className="px-3 py-3">{formatLabel(row.top_label)}</td>
+                <td className="px-3 py-3">{row.top_label.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}</td>
                 <td className="px-3 py-3">{(row.top_confidence * 100).toFixed(1)}%</td>
                 <td className="px-3 py-3">{row.inference_ms ? `${row.inference_ms.toFixed(2)} ms` : "—"}</td>
                 <td className="px-3 py-3">{row.checkpoint_size_mb ? `${row.checkpoint_size_mb} MB` : "—"}</td>

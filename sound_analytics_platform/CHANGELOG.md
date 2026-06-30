@@ -1,5 +1,60 @@
 # Changelog
 
+## June 2026 — Evaluation & explainability (Phase C)
+
+Additive changes. Core predict → modal → Supabase flow unchanged.
+
+### New: Explainable AI section (classification report)
+
+- **Component:** `frontend/src/components/ExplainableAIPanel.tsx`
+- **Where:** Classification report modal (`AnalysisResults.tsx`)
+- **Includes:** Plain-English narrative, Play Sound, confidence calibration, waveform/Mel/Grad-CAM visuals, router block (auto mode), top-3 softmax distribution
+
+### New: Explainable AI blurb (comparison report)
+
+- **Component:** `frontend/src/components/ComparisonExplainabilityBlurb.tsx`
+- **Helper:** `frontend/src/lib/comparisonSummary.ts` (shared with `ComparisonWinnerCard`)
+- **Where:** Multi-model comparison modal (`ModelComparisonPanel`)
+- **Includes:** Per-model prediction summary, agreement %, fastest/highest-confidence notes, suggested pick, Play Sound
+
+### New: Play Sound on all reports
+
+- **Component:** `frontend/src/components/PlaySoundButton.tsx`
+- **Where:** Explainable AI sections (classification + comparison)
+- **Behaviour:** Upload/mic uses blob replay; dataset/showcase uses `dataset_domain` + `sample_id` stream URL
+- **API:** `PredictResponse.dataset_domain`; `ModelCompareResponse.sample_id`, `dataset_domain`, `input_source`
+
+### New: History ground-truth audit filters
+
+- **Component:** `PredictionHistoryPanel.tsx` (filters + Ground truth / Audit columns)
+- **Backend:** `enrich_prediction_row()` in `predictions_repo.py`; saves `ground_truth_label`, `sample_id`, `dataset_domain` on dataset predictions
+- **Helper:** `label_matching.py` / `lib/labelMatching.ts` (`dog` ↔ `dog_bark` equivalence)
+- **Filters:** All · Dataset audits · Correct · Mismatches
+
+### Migration: ground-truth audit columns
+
+- **File:** `supabase/migrations/003_ground_truth_audit.sql`
+- **Columns:** `sample_id`, `ground_truth_label`, `dataset_domain` on `predictions`
+- **Note:** History audit works without migration via sample lookup fallback on fetch
+
+### Files added (Phase C)
+
+```
+frontend/src/components/
+  ExplainableAIPanel.tsx
+  ComparisonExplainabilityBlurb.tsx
+  PlaySoundButton.tsx
+frontend/src/lib/
+  comparisonSummary.ts
+  labelMatching.ts
+backend/app/services/
+  label_matching.py
+supabase/migrations/
+  003_ground_truth_audit.sql
+```
+
+---
+
 ## June 2026 — Phase B (session tools & router lab)
 
 Additive changes. Core predict → modal → Supabase flow unchanged.

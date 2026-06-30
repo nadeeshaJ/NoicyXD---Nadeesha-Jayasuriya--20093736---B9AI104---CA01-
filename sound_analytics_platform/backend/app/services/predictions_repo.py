@@ -4,6 +4,7 @@ from typing import Any
 
 from postgrest.exceptions import APIError
 
+from app.services.label_matching import labels_match
 from app.services.prediction_payload import build_save_row
 from app.services.supabase_client import get_supabase_client
 
@@ -14,6 +15,9 @@ EXTENDED_PREDICTION_FIELDS = frozenset(
         "display_label",
         "entropy_normalized",
         "router_metrics",
+        "ground_truth_label",
+        "sample_id",
+        "dataset_domain",
     }
 )
 
@@ -54,6 +58,9 @@ def save_prediction_record(
     original_filename: str | None = None,
     device_used: str | None = None,
     user_id: str | None = None,
+    ground_truth_label: str | None = None,
+    sample_id: str | None = None,
+    dataset_domain: str | None = None,
 ) -> dict[str, Any]:
     row = build_save_row(
         session_id=session_id,
@@ -72,6 +79,9 @@ def save_prediction_record(
         original_filename=original_filename,
         device_used=device_used,
         user_id=user_id,
+        ground_truth_label=ground_truth_label,
+        sample_id=sample_id,
+        dataset_domain=dataset_domain,
     )
     if router_reason and not row.get("router_reason"):
         row["router_reason"] = router_reason
@@ -84,6 +94,44 @@ def save_prediction_record(
         return _insert_prediction_row(base_row)
 
 
+def _lookup_sample_ground_truth(sample_id: str) -> dict[str, str] | None:
+    from app.services.datasets import resolve_sample_audio
+
+    for domain in ("urban", "animal"):
+        try:
+            _, ground_truth, resolved_id = resolve_sample_audio(domain, sample_id)
+            return {
+                "ground_truth_label": ground_truth,
+                "sample_id": resolved_id,
+                "dataset_domain": domain,
+            }
+        except FileNotFoundError:
+            continue
+    return None
+
+
+def enrich_prediction_row(row: dict[str, Any]) -> dict[str, Any]:
+    enriched = dict(row)
+    ground_truth = enriched.get("ground_truth_label")
+
+    if not ground_truth:
+        sample_key = enriched.get("sample_id") or enriched.get("original_filename")
+        if enriched.get("input_source") == "dataset" and sample_key:
+            lookup = _lookup_sample_ground_truth(str(sample_key))
+            if lookup:
+                enriched.update(lookup)
+                ground_truth = enriched.get("ground_truth_label")
+
+    if ground_truth:
+        enriched["has_ground_truth"] = True
+        enriched["audit_match"] = labels_match(str(enriched.get("top_label", "")), str(ground_truth))
+    else:
+        enriched["has_ground_truth"] = False
+        enriched["audit_match"] = None
+
+    return enriched
+
+
 def fetch_recent_predictions(session_id: str, limit: int = 20) -> list[dict[str, Any]]:
     client = get_supabase_client()
     response = (
@@ -94,7 +142,7 @@ def fetch_recent_predictions(session_id: str, limit: int = 20) -> list[dict[str,
         .limit(limit)
         .execute()
     )
-    return response.data or []
+    return [enrich_prediction_row(row) for row in (response.data or [])]
 
 
 def fetch_model_benchmarks() -> list[dict[str, Any]]:

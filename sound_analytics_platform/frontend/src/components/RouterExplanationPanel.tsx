@@ -8,23 +8,30 @@ function formatLabel(label: string) {
 
 type Props = {
   router: NonNullable<PredictResult["router"]>;
+  embedded?: boolean;
 };
 
-export function RouterExplanationPanel({ router }: Props) {
+export function RouterExplanationPanel({ router, embedded = false }: Props) {
   const finalRoute = router.domain || "urban";
-  return (
-    <section className="glass-panel p-6 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-64 h-64 bg-cyanGradient pointer-events-none z-0" />
-      
-      <div className="relative z-10 flex items-center gap-3 mb-4">
-        <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-glow border border-cyan-500/20 shadow-cyanGlow">
-          <Route size={18} />
+
+  const content = (
+    <>
+      {!embedded ? (
+        <div className="relative z-10 flex items-center gap-3 mb-4">
+          <div className="rounded-xl bg-cyan-500/10 p-2 text-cyan-glow border border-cyan-500/20 shadow-cyanGlow">
+            <Route size={18} />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-white tracking-tight">Smart Domain Router Explanation</h3>
+            <p className="text-xs text-white/50">Auto-routes audio streams to domain experts based on probability calibration.</p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-lg font-bold text-white tracking-tight">Smart Domain Router Explanation</h3>
-          <p className="text-xs text-white/50">Auto-routes audio streams to domain experts based on probability calibration.</p>
-        </div>
-      </div>
+      ) : (
+        <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60 flex items-center gap-2">
+          <Route size={14} className="text-cyan-glow" />
+          Smart domain router
+        </h4>
+      )}
       
       <p className="relative z-10 text-sm text-white/70 leading-relaxed font-medium bg-white/[0.02] border border-white/[0.05] rounded-xl p-4">
         {router.primary_reason ?? router.reason}
@@ -88,6 +95,17 @@ export function RouterExplanationPanel({ router }: Props) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5 relative">{content}</div>;
+  }
+
+  return (
+    <section className="glass-panel p-6 relative overflow-hidden">
+      <div className="absolute top-0 left-0 w-64 h-64 bg-cyanGradient pointer-events-none z-0" />
+      {content}
     </section>
   );
 }

@@ -6,13 +6,14 @@ const HIGH_THRESH = 0.7;
 type Props = {
   result: PredictResult;
   assessment: AssessmentInfo;
+  embedded?: boolean;
 };
 
 function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
-export function ConfidenceCalibrationPanel({ result, assessment }: Props) {
+export function ConfidenceCalibrationPanel({ result, assessment, embedded = false }: Props) {
   const confidence = assessment.confidence;
   const pct = confidence * 100;
   const top2Gap =
@@ -20,9 +21,13 @@ export function ConfidenceCalibrationPanel({ result, assessment }: Props) {
       ? (result.predictions[0].confidence - result.predictions[1].confidence) * 100
       : null;
 
-  return (
-    <section className="glass-panel p-5">
-      <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Confidence calibration</h3>
+  const body = (
+    <>
+      {!embedded ? (
+        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Confidence calibration</h3>
+      ) : (
+        <h4 className="mb-4 text-xs font-bold uppercase tracking-wider text-white/60">Confidence calibration</h4>
+      )}
 
       <div className="relative mb-6 h-3 rounded-full bg-white/[0.06] overflow-hidden">
         <div
@@ -68,6 +73,12 @@ export function ConfidenceCalibrationPanel({ result, assessment }: Props) {
           <div className="text-white/35 mt-0.5">{assessment.is_unknown ? "Below unknown threshold" : formatLabel(assessment.display_label)}</div>
         </div>
       </div>
-    </section>
+    </>
   );
+
+  if (embedded) {
+    return <div className="rounded-2xl border border-white/[0.05] bg-white/[0.02] p-5">{body}</div>;
+  }
+
+  return <section className="glass-panel p-5">{body}</section>;
 }

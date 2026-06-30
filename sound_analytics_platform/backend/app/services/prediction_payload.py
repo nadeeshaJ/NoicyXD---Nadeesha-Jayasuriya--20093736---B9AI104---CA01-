@@ -21,6 +21,9 @@ def build_save_row(
     original_filename: str | None = None,
     device_used: str | None = None,
     user_id: str | None = None,
+    ground_truth_label: str | None = None,
+    sample_id: str | None = None,
+    dataset_domain: str | None = None,
 ) -> dict[str, Any]:
     assessment = assessment or {}
     row = {
@@ -44,5 +47,8 @@ def build_save_row(
         "display_label": assessment.get("display_name") or top_label,
         "entropy_normalized": assessment.get("entropy_normalized"),
         "router_metrics": router,
+        "ground_truth_label": ground_truth_label,
+        "sample_id": sample_id,
+        "dataset_domain": dataset_domain,
     }
     return row

@@ -34,6 +34,9 @@ This folder contains the **web app** (React + FastAPI + Supabase). It sits insid
 - **Session Timeline** — chronological session story + ZIP export  
 - **Router Lab** — auto-router transparency and urban/animal what-if reruns  
 - **Presentation mode** — larger demo layout toggle in sidebar  
+- **Explainable AI** — consolidated section on classification reports; blurb on comparison reports  
+- **Play Sound** — hear the clip in any report modal (upload, mic, or dataset stream)  
+- **History audit filters** — All / Dataset audits / Correct / Mismatches  
 - **Router panel** — dual-expert scores and routing reason (auto mode)  
 - **Reliability labels** — High / Medium / Low  
 - **Confidence calibration** — thresholds and entropy in analysis reports  
@@ -122,6 +125,7 @@ Without real `.pt` files, the API may load random/mock weights and predictions w
    - `supabase/migrations/001_initial_schema.sql`
    - `supabase/migrations/002_prediction_metadata.sql`
    - `supabase/migrations/002_dataset_input_source.sql`
+   - `supabase/migrations/003_ground_truth_audit.sql`
 3. Confirm tables exist: `predictions`, `model_benchmarks`, `sound_classes`
 Project URL used in this submission: `https://fhpcrtnhqrmjsdcrpqzm.supabase.co`
 
@@ -212,14 +216,16 @@ Expected: `"status":"ok"` and `"supabase_configured":true`.
 
 1. **Showcase** or **Analyze Live** — run a classification  
 2. Review validation preview (upload) or scenario card (Showcase)  
-3. **Run Analysis** — view prediction, calibration panel, Grad-CAM, benchmarks  
+3. **Run Analysis** — open report → **Explainable AI** section (narrative, Grad-CAM, calibration) → **Play Sound**  
 4. **Router Lab** — after auto-mode run, try urban/animal what-if reruns  
-5. **Compare All Models** — winner summary + per-model table  
+5. **Compare All Models** — read **Explainable AI · Model comparison** blurb + winner summary  
 6. **Session Timeline** — chronological log + **Export session ZIP**  
-7. **History** — past predictions from Supabase (per browser session)  
+7. **History** — filter **Mismatches** for dataset error analysis  
 8. **Analytics** — class counts and latency trends  
 9. **Export Report** — download single-analysis ZIP with summary + images  
 10. **Presentation mode** — sidebar toggle for demo layout  
+
+Full walkthrough: [`USER_GUIDE.md`](USER_GUIDE.md) §17.
 
 ---
 

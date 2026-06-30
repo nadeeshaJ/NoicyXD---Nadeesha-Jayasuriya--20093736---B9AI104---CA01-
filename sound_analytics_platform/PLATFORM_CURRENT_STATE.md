@@ -17,6 +17,9 @@ Web application for classifying environmental audio with trained CNN models on M
 - Session Timeline tab with session ZIP export
 - Router Lab tab with auto-router what-if reruns
 - Presentation mode toggle for live demos
+- Consolidated Explainable AI on classification and comparison reports
+- Play Sound on all report modals
+- History ground-truth audit filters (correct / mismatch)
 - Multi-model comparison with winner summary cards
 - Grad-CAM and confidence calibration in reports
 - Auto-routing between urban and animal experts
@@ -105,14 +108,17 @@ Controls appear in the **top header**, not the sidebar.
 
 **Analysis report includes:**
 
-- Top prediction + top-3 probability bars
-- Reliability assessment (High / Medium / Low) and unknown/uncertain flag (< 40% threshold)
-- Router explanation panel (auto mode)
-- **Confidence calibration** — thresholds, entropy, top-1 vs top-2 gap (`ConfidenceCalibrationPanel`)
-- Waveform, Mel-spectrogram, Grad-CAM overlay images
-- Model benchmark comparison cards
-- **Play Sound** — replay uploaded/recording audio in browser
-- **Export Report** — ZIP with JSON summary, CSV, PNG assets
+- **Classification Assessment** — top prediction, reliability, export ZIP
+- **Explainable AI** (`ExplainableAIPanel`) — narrative summary, Play Sound, confidence calibration, waveform/Mel/Grad-CAM, router (auto), top-3 softmax
+- Ground truth match box (dataset samples)
+- Metric cards (latency, entropy, Supabase sync)
+- Model benchmark comparison cards (urban)
+
+**Comparison report includes:**
+
+- **Explainable AI · Model comparison** blurb (`ComparisonExplainabilityBlurb`) + Play Sound
+- Winner summary cards (`ComparisonWinnerCard`)
+- Per-model results table
 
 ### 3.2 Project Datasets
 
@@ -197,18 +203,25 @@ Controls appear in the **top header**, not the sidebar.
 
 **Data source:** `GET /api/predictions?limit=50` with `X-Session-Id`
 
-**Table columns:** Timestamp, Source, Mode, Model, Top Guess, Confidence, Reliability, Inference ms
+**Enrichment:** Backend adds `ground_truth_label`, `has_ground_truth`, `audit_match` via DB columns or dataset sample lookup (`enrich_prediction_row`)
+
+**Filters:** All · Dataset audits · Correct · Mismatches
+
+**Table columns:** Timestamp, Source, Ground truth, Audit (Match/Mismatch/N/A), Mode, Model, Top Guess, Confidence, Reliability, Inference ms
 
 **Behaviour:**
 
 - Always loads via backend API (consistent with how predictions are saved)
 - Auto-refreshes when a new `saved_prediction_id` is returned from analyze
 - Derives reliability from confidence when DB field is null (matches `config.yaml` thresholds)
+- `dog` ↔ `dog_bark` treated as match (`label_matching.py`)
 - WaveLoader, empty state, error + retry
 
 **Comparison report** (`ModelComparisonPanel`):
 
-- **Winner summary** — fastest, highest confidence, agreement %, suggested pick (`ComparisonWinnerCard`)
+- **Explainability blurb** — plain-English per-model readout (`ComparisonExplainabilityBlurb`, `lib/comparisonSummary.ts`)
+- **Play Sound** — upload blob or dataset stream
+- **Winner summary** — fastest, highest confidence, agreement %, suggested pick
 - Per-model table (prediction, latency, checkpoint size)
 
 ### 3.7 Router Lab
@@ -331,6 +344,7 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 1. `001_initial_schema.sql` — tables, RLS, seed data
 2. `002_prediction_metadata.sql` — reliability, unknown, display_label, router_metrics
 3. `002_dataset_input_source.sql` — allow `input_source='dataset'`
+4. `003_ground_truth_audit.sql` — `sample_id`, `ground_truth_label`, `dataset_domain` on predictions
 
 | Table | Purpose |
 |-------|---------|
@@ -355,8 +369,11 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | `ShowcasePanel.tsx` | Curated one-click demo scenarios |
 | `SessionTimelinePanel.tsx` | Session story timeline + session ZIP export |
 | `RouterLabPanel.tsx` | Router transparency and what-if forced reruns |
+| `ExplainableAIPanel.tsx` | Consolidated XAI block in classification report |
+| `ComparisonExplainabilityBlurb.tsx` | Plain-language blurb on comparison report |
+| `PlaySoundButton.tsx` | Replay audio in report modals |
 | `AnalysisResults.tsx` | Classification report modal content |
-| `ConfidenceCalibrationPanel.tsx` | Confidence thresholds and entropy in report |
+| `ConfidenceCalibrationPanel.tsx` | Confidence thresholds and entropy (embedded in XAI) |
 | `ModelComparisonPanel.tsx` | Multi-model comparison report |
 | `ComparisonWinnerCard.tsx` | Winner summary on comparison report |
 | `ModelsPanel.tsx` | CNN Models tab (urban, animal, deployment profiles) |
@@ -367,7 +384,7 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | `WaveLoader.tsx` | Animated loading state |
 | `MetricCard.tsx` | Reusable KPI card |
 
-**Libraries:** `lib/api.ts` (API client), `lib/session.ts` (session ID), `lib/presentationMode.ts` (demo layout toggle), `lib/supabase.ts` (optional direct Supabase for benchmarks), `lib/audio.ts` (recording → WAV)
+**Libraries:** `lib/api.ts` (API client), `lib/session.ts` (session ID), `lib/presentationMode.ts` (demo layout toggle), `lib/comparisonSummary.ts` (compare narrative + winner stats), `lib/labelMatching.ts` (ground-truth audit), `lib/supabase.ts` (optional direct Supabase for benchmarks), `lib/audio.ts` (recording → WAV)
 
 ---
 
@@ -456,6 +473,16 @@ Browser session ID → GET /predictions or /analytics/dashboard
 ## 10. Change log
 
 See **`CHANGELOG.md`** for dated entries.
+
+### Phase C (June 2026)
+
+| Feature | Component / file |
+|---------|------------------|
+| Explainable AI (classification) | `ExplainableAIPanel.tsx` |
+| Explainable AI (comparison blurb) | `ComparisonExplainabilityBlurb.tsx`, `lib/comparisonSummary.ts` |
+| Play Sound on reports | `PlaySoundButton.tsx` |
+| History audit filters | `PredictionHistoryPanel.tsx`, `predictions_repo.enrich_prediction_row` |
+| Ground-truth DB columns | `003_ground_truth_audit.sql` |
 
 ### Phase B (June 2026)
 
@@ -552,4 +579,5 @@ sound_analytics_platform/
 | Evaluation metrics | Benchmark cards and ZIP export |
 | Logging and monitoring | Supabase predictions, history, analytics dashboard |
 | Showcase demos | Curated scenarios tab |
-| Report extras | Confidence calibration, comparison winner summary |
+| Report extras | Confidence calibration, Explainable AI section, comparison XAI blurb, Play Sound |
+| Error analysis | History tab mismatch filter vs dataset ground truth |

@@ -42,6 +42,7 @@ import {
   setPresentationMode,
 } from "./lib/presentationMode";
 import { WaveLoader } from "./components/WaveLoader";
+import { type ReportAudioSource } from "./components/PlaySoundButton";
 
 import { fetchBenchmarksFromSupabase, supabaseConfigured } from "./lib/supabase";
 
@@ -99,6 +100,15 @@ export default function App() {
   const [checkpointSummary, setCheckpointSummary] = useState("");
   const [routerLabContext, setRouterLabContext] = useState<RouterLabContext | null>(null);
   const [presentationMode, setPresentationModeState] = useState(() => getPresentationMode());
+  const [reportAudio, setReportAudio] = useState<ReportAudioSource | null>(null);
+
+  function setDatasetReportAudio(domain: "urban" | "animal" | null, sampleId?: string | null) {
+    setReportAudio({
+      pendingAudio: null,
+      datasetDomain: domain,
+      sampleId: sampleId ?? null,
+    });
+  }
 
   function syncRouterLabContext(
     payload: PredictResult,
@@ -245,6 +255,7 @@ export default function App() {
         filename: pendingAudio.filename,
       };
       setAnalysisAudio(audio);
+      setReportAudio({ pendingAudio: audio, datasetDomain: null, sampleId: null });
       syncRouterLabContext(payload, audio, null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Prediction failed.");
@@ -265,6 +276,15 @@ export default function App() {
           mode,
         }),
       );
+      setReportAudio({
+        pendingAudio: {
+          blob: pendingAudio.blob,
+          source: pendingAudio.source,
+          filename: pendingAudio.filename,
+        },
+        datasetDomain: null,
+        sampleId: null,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Model comparison failed.");
     } finally {
@@ -488,11 +508,18 @@ export default function App() {
                   setAnalysisAudio(null);
                   const domain = (sample?.domain as "urban" | "animal") ?? null;
                   setResultDatasetDomain(domain);
+                  setDatasetReportAudio(domain, payload.sample_id ?? sample?.sample_id);
                   syncRouterLabContext(payload, null, domain);
                   setComparison(null);
                   setError(null);
                 }}
-                onComparison={setComparison}
+                onComparison={(comparison, sample) => {
+                  setComparison(comparison);
+                  setDatasetReportAudio(
+                    (sample?.domain as "urban" | "animal") ?? comparison.dataset_domain ?? null,
+                    comparison.sample_id ?? sample?.sample_id ?? null,
+                  );
+                }}
                 onLoading={handleDatasetLoading}
                 onDomainChange={handleDatasetsDomainChange}
                 onError={setError}
@@ -510,6 +537,7 @@ export default function App() {
                   setAnalysisAudio(null);
                   const domain = (sample?.domain as "urban" | "animal") ?? null;
                   setResultDatasetDomain(domain);
+                  setDatasetReportAudio(domain, payload.sample_id ?? sample?.sample_id);
                   syncRouterLabContext(payload, null, domain);
                   setComparison(null);
                   setError(null);
@@ -544,6 +572,16 @@ export default function App() {
               onOpenResult={(payload) => {
                 setResult(payload);
                 setComparison(null);
+                const domain =
+                  routerLabContext?.datasetDomain ??
+                  (payload.dataset_domain as "urban" | "animal" | null) ??
+                  null;
+                setResultDatasetDomain(domain);
+                setReportAudio({
+                  pendingAudio: routerLabContext?.pendingAudio ?? null,
+                  datasetDomain: domain,
+                  sampleId: payload.sample_id ?? routerLabContext?.sampleId ?? null,
+                });
               }}
             />
           ) : null}
@@ -582,8 +620,15 @@ export default function App() {
                     result={result}
                     benchmarks={benchmarks}
                     modelName={modelName}
-                    pendingAudio={analysisAudio}
-                    datasetDomain={resultDatasetDomain}
+                    audioSource={{
+                      pendingAudio: analysisAudio ?? reportAudio?.pendingAudio ?? null,
+                      datasetDomain:
+                        resultDatasetDomain ??
+                        result.dataset_domain ??
+                        reportAudio?.datasetDomain ??
+                        null,
+                      sampleId: result.sample_id ?? reportAudio?.sampleId ?? null,
+                    }}
                   />
                 </div>
               )}
@@ -594,7 +639,14 @@ export default function App() {
                     <h2 className="text-2xl font-black text-white tracking-tight">Multi-Model Cross Auditing Report</h2>
                     <p className="text-xs text-white/50 mt-1">Comparative inference metrics across MobileNetV2, ResNet50, and Custom CNN architectures</p>
                   </div>
-                  <ModelComparisonPanel comparison={comparison} />
+                  <ModelComparisonPanel
+                    comparison={comparison}
+                    audioSource={{
+                      pendingAudio: reportAudio?.pendingAudio ?? null,
+                      datasetDomain: comparison.dataset_domain ?? reportAudio?.datasetDomain ?? null,
+                      sampleId: comparison.sample_id ?? reportAudio?.sampleId ?? null,
+                    }}
+                  />
                 </div>
               )}
             </div>

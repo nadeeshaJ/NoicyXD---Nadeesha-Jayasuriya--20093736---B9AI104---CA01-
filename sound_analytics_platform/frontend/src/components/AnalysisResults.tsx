@@ -1,9 +1,8 @@
-import { Download, AlertCircle, CheckCircle2, Zap, Volume2, Square } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import { API_BASE, exportPredictionReport, pngDataUrl, type PendingAudio, type PredictResult } from "../lib/api";
+import { Download, AlertCircle, CheckCircle2, Zap } from "lucide-react";
+import { exportPredictionReport, type PredictResult } from "../lib/api";
 import { MetricCard } from "./MetricCard";
-import { ConfidenceCalibrationPanel } from "./ConfidenceCalibrationPanel";
-import { RouterExplanationPanel } from "./RouterExplanationPanel";
+import { ExplainableAIPanel } from "./ExplainableAIPanel";
+import { type ReportAudioSource } from "./PlaySoundButton";
 
 function formatLabel(label: string) {
   return label.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
@@ -13,8 +12,7 @@ type Props = {
   result: PredictResult;
   benchmarks: any[];
   modelName: string;
-  pendingAudio?: PendingAudio | null;
-  datasetDomain?: "urban" | "animal" | null;
+  audioSource?: ReportAudioSource | null;
 };
 
 function reliabilityClass(level: string, isUnknown: boolean) {
@@ -24,84 +22,23 @@ function reliabilityClass(level: string, isUnknown: boolean) {
   return "border-status-error/30 bg-status-error/[0.02] text-status-error";
 }
 
-export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, datasetDomain }: Props) {
+function buildAudioSource(result: PredictResult, audioSource?: ReportAudioSource | null): ReportAudioSource {
+  const datasetDomain =
+    audioSource?.datasetDomain ??
+    (result.dataset_domain as "urban" | "animal" | undefined) ??
+    null;
+
+  return {
+    pendingAudio: audioSource?.pendingAudio ?? null,
+    datasetDomain,
+    sampleId: audioSource?.sampleId ?? result.sample_id ?? null,
+  };
+}
+
+export function AnalysisResults({ result, benchmarks, modelName, audioSource }: Props) {
   const activeBenchmark = benchmarks.find((row) => row.model_key === (result.model_key ?? modelName));
   const assessment = result.assessment;
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const objectUrlRef = useRef<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackError, setPlaybackError] = useState<string | null>(null);
-
-  const resolvedDatasetDomain =
-    datasetDomain ??
-    (result.input_source === "dataset" && result.effective_mode
-      ? (result.effective_mode as "urban" | "animal")
-      : null);
-  const isDatasetSample = result.input_source === "dataset" && Boolean(result.sample_id);
-  const canPlayDataset = isDatasetSample && Boolean(resolvedDatasetDomain);
-  const canPlayBlob = !isDatasetSample && Boolean(pendingAudio?.blob);
-  const canPlay = canPlayDataset || canPlayBlob;
-
-  useEffect(() => {
-    return () => {
-      audioRef.current?.pause();
-      audioRef.current = null;
-      if (objectUrlRef.current) {
-        URL.revokeObjectURL(objectUrlRef.current);
-        objectUrlRef.current = null;
-      }
-    };
-  }, []);
-
-  function releaseObjectUrl() {
-    if (objectUrlRef.current) {
-      URL.revokeObjectURL(objectUrlRef.current);
-      objectUrlRef.current = null;
-    }
-  }
-
-  function stopPlayback() {
-    audioRef.current?.pause();
-    audioRef.current = null;
-    setIsPlaying(false);
-    releaseObjectUrl();
-  }
-
-  async function togglePlay() {
-    setPlaybackError(null);
-
-    if (isPlaying) {
-      stopPlayback();
-      return;
-    }
-
-    let src: string;
-    if (canPlayDataset && resolvedDatasetDomain && result.sample_id) {
-      src = `${API_BASE}/api/datasets/${resolvedDatasetDomain}/samples/${encodeURIComponent(result.sample_id)}/audio`;
-    } else if (canPlayBlob && pendingAudio?.blob) {
-      releaseObjectUrl();
-      src = URL.createObjectURL(pendingAudio.blob);
-      objectUrlRef.current = src;
-    } else {
-      return;
-    }
-
-    const audio = new Audio(src);
-    audioRef.current = audio;
-    audio.onended = () => stopPlayback();
-    audio.onerror = () => {
-      setPlaybackError("Could not play this audio clip.");
-      stopPlayback();
-    };
-
-    try {
-      await audio.play();
-      setIsPlaying(true);
-    } catch {
-      setPlaybackError("Playback blocked or unsupported format.");
-      stopPlayback();
-    }
-  }
+  const playback = buildAudioSource(result, audioSource);
 
   const isCorrect =
     result.ground_truth_label &&
@@ -146,32 +83,11 @@ export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, d
         </div>
       ) : null}
 
-      {result.router ? <RouterExplanationPanel router={result.router} /> : null}
-
       <section className={`glass-panel p-6 relative overflow-hidden border ${reliabilityClass(assessment.reliability_level, assessment.is_unknown)}`}>
         <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-white/[0.01] to-transparent pointer-events-none" />
         <div className="flex flex-wrap items-center justify-between gap-6 relative z-10">
           <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="text-xs uppercase font-bold tracking-widest opacity-60">Classification Assessment</div>
-              {canPlay ? (
-                <button
-                  type="button"
-                  className={`px-3 py-1 rounded-xl border text-[11px] font-bold transition flex items-center gap-1.5 ${
-                    isPlaying
-                      ? "bg-status-success/15 border-status-success/30 text-status-success shadow-glow animate-pulse"
-                      : "bg-white/[0.03] border-white/[0.05] text-white/70 hover:bg-white/[0.08]"
-                  }`}
-                  onClick={() => void togglePlay()}
-                >
-                  {isPlaying ? <Square size={10} className="fill-current" /> : <Volume2 size={10} />}
-                  {isPlaying ? "Stop Sound" : "Play Sound"}
-                </button>
-              ) : null}
-            </div>
-            {playbackError ? (
-              <p className="text-[11px] text-status-warning font-medium">{playbackError}</p>
-            ) : null}
+            <div className="text-xs uppercase font-bold tracking-widest opacity-60">Classification Assessment</div>
             <div className="text-2xl font-extrabold text-white tracking-tight">{assessment.display_name}</div>
             <div className="text-xs opacity-80 font-medium">
               Confidence Score: {(assessment.confidence * 100).toFixed(1)}% · Reliability Rating: {assessment.reliability_level}
@@ -187,7 +103,7 @@ export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, d
         </div>
       </section>
 
-      <ConfidenceCalibrationPanel result={result} assessment={assessment} />
+      <ExplainableAIPanel result={result} assessment={assessment} audioSource={playback} />
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard label="Primary Guess" value={formatLabel(result.top_label)} hint={`${(result.top_confidence * 100).toFixed(1)}% confidence`} accent />
@@ -232,38 +148,6 @@ export function AnalysisResults({ result, benchmarks, modelName, pendingAudio, d
           </div>
         </section>
       ) : null}
-
-      <section className="grid gap-6 md:grid-cols-3">
-        {[
-          { title: "Waveform Representation", src: result.waveform_png },
-          { title: "Input Mel-Spectrogram", src: result.mel_png },
-          { title: "Grad-CAM Explainability", src: result.gradcam_png ?? result.rgb_png },
-        ].map((panel) => (
-          <div key={panel.title} className="glass-panel p-4 hover:border-white/[0.08] transition">
-            <h3 className="mb-3 text-xs font-bold uppercase tracking-wider text-white/60">{panel.title}</h3>
-            <div className="overflow-hidden rounded-xl border border-white/[0.06] bg-brand-dark/30">
-              <img src={pngDataUrl(panel.src)} alt={panel.title} className="w-full hover:scale-105 transition duration-500" />
-            </div>
-          </div>
-        ))}
-      </section>
-
-      <section className="glass-panel p-6">
-        <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">Softmax Distribution (Top 3 Candidates)</h3>
-        <div className="space-y-5">
-          {result.predictions.map((prediction) => (
-            <div key={prediction.label}>
-              <div className="mb-1.5 flex justify-between text-xs font-medium">
-                <span className="text-white/80">{formatLabel(prediction.label)}</span>
-                <span className="text-accent-glow font-bold">{(prediction.confidence * 100).toFixed(1)}%</span>
-              </div>
-              <div className="progress-bar">
-                <div className="progress-fill animate-pulse-slow" style={{ width: `${prediction.confidence * 100}%` }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
     </div>
   );
 }

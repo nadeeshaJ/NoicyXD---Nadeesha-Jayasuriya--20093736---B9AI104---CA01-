@@ -20,7 +20,7 @@ type Props = {
   gradcam: boolean;
   disabled?: boolean;
   onResult: (result: PredictResult, sample?: DatasetSample) => void;
-  onComparison: (comparison: ModelCompareResult) => void;
+  onComparison: (comparison: ModelCompareResult, sample?: DatasetSample) => void;
   onLoading: (loading: boolean, action?: DatasetLoadingAction) => void;
   onDomainChange: (domain: "urban" | "animal") => void;
   onError: (message: string | null) => void;
@@ -92,6 +92,7 @@ export function DatasetsPanel({
           sampleId: sample.sample_id,
           mode: sampleDomain,
         }),
+        sample,
       );
     } catch (err) {
       onError(err instanceof Error ? err.message : "Failed to compare models on sample.");

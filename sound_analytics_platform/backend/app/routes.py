@@ -253,6 +253,7 @@ def _finalize_prediction(
     original_filename: str | None,
     ground_truth_label: str | None = None,
     sample_id: str | None = None,
+    dataset_domain: str | None = None,
 ) -> PredictResponse:
     saved_id = None
     if save_to_db:
@@ -273,6 +274,9 @@ def _finalize_prediction(
                 router=result.get("router"),
                 gradcam_enabled=gradcam,
                 device_used=result.get("device_used"),
+                ground_truth_label=ground_truth_label,
+                sample_id=sample_id,
+                dataset_domain=dataset_domain,
             )
             saved_id = saved.get("id")
         except Exception:
@@ -282,6 +286,7 @@ def _finalize_prediction(
     result["ground_truth_label"] = ground_truth_label
     result["sample_id"] = sample_id
     result["input_source"] = input_source
+    result["dataset_domain"] = dataset_domain
     return PredictResponse(**result)
 
 
@@ -338,6 +343,7 @@ async def predict_from_sample(
         original_filename=resolved_id,
         ground_truth_label=ground_truth,
         sample_id=resolved_id,
+        dataset_domain=domain,
     )
 
 
@@ -408,7 +414,9 @@ async def compare_models(
     if not audio_bytes:
         raise HTTPException(status_code=400, detail="Empty audio file.")
     try:
-        return inference_service.compare_models(audio_bytes, mode=mode)
+        payload = inference_service.compare_models(audio_bytes, mode=mode)
+        payload["input_source"] = "upload"
+        return payload
     except Exception as exc:
         raise HTTPException(status_code=500, detail=f"Model comparison failed: {exc}") from exc
 
@@ -429,8 +437,12 @@ async def compare_sample_models(
     if domain not in {"urban", "animal"}:
         raise HTTPException(status_code=400, detail="Invalid domain.")
     try:
-        audio_path, _, _ = resolve_sample_audio(domain, sample_id)
-        return inference_service.compare_models(audio_path.read_bytes(), mode=mode)
+        audio_path, _, resolved_id = resolve_sample_audio(domain, sample_id)
+        payload = inference_service.compare_models(audio_path.read_bytes(), mode=mode)
+        payload["sample_id"] = resolved_id
+        payload["dataset_domain"] = domain
+        payload["input_source"] = "dataset"
+        return payload
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:

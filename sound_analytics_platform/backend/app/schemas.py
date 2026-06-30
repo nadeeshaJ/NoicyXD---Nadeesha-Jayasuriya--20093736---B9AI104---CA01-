@@ -73,6 +73,7 @@ class PredictResponse(BaseModel):
     ground_truth_label: str | None = Field(default=None, description="Dataset label when predicting from a sample.")
     sample_id: str | None = Field(default=None, description="Dataset WAV filename when applicable.")
     input_source: str | None = Field(default=None, description="upload, microphone, or dataset.")
+    dataset_domain: str | None = Field(default=None, description="Dataset partition (urban or animal) when sample_id is set.")
 
 
 class CheckpointStatus(BaseModel):
@@ -138,6 +139,9 @@ class ModelCompareItem(BaseModel):
 class ModelCompareResponse(BaseModel):
     effective_mode: str
     comparisons: list[ModelCompareItem]
+    sample_id: str | None = Field(default=None, description="Dataset WAV filename when comparing a sample.")
+    dataset_domain: str | None = Field(default=None, description="urban or animal when comparing a dataset sample.")
+    input_source: str | None = Field(default=None, description="upload or dataset.")
 
 
 class AnalyticsDashboardResponse(BaseModel):
