@@ -97,3 +97,33 @@ body {
   animation: pulse-ring 1.8s ease-in-out infinite;
 }
 
+/* Presentation / demo mode — larger type, calmer chrome for live demos */
+.presentation-mode {
+  font-size: 106%;
+}
+
+.presentation-mode .glass-panel {
+  @apply border-white/[0.1];
+}
+
+.presentation-mode h1 {
+  @apply text-3xl sm:text-4xl;
+}
+
+.presentation-mode .btn-tab-active,
+.presentation-mode .btn-tab-inactive {
+  @apply text-[15px] py-3.5;
+}
+
+.presentation-mode .metric-card {
+  @apply p-6;
+}
+
+.presentation-mode .sap-help-banner {
+  display: none;
+}
+
+.presentation-mode .progress-bar {
+  @apply h-3;
+}
+

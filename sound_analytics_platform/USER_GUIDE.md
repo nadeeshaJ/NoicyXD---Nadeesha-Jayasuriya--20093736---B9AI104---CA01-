@@ -14,14 +14,16 @@ Setup: `README.md`. Technical reference: `PLATFORM_CURRENT_STATE.md`. Changes: `
 5. [Tab: Analyze Live](#5-tab-analyze-live)
 6. [Tab: Project Datasets](#6-tab-project-datasets)
 7. [Tab: Showcase](#7-tab-showcase)
-8. [Tab: Analytics](#8-tab-analytics)
-9. [Tab: History](#9-tab-history)
-10. [Tab: Models](#10-tab-models)
-11. [Understanding results](#11-understanding-results)
-12. [Processing modes explained](#12-processing-modes-explained)
-13. [Supabase database](#13-supabase-database)
-14. [Troubleshooting](#14-troubleshooting)
-15. [Demo walkthrough](#15-demo-walkthrough)
+8. [Tab: Session Timeline](#8-tab-session-timeline)
+9. [Tab: Analytics](#9-tab-analytics)
+10. [Tab: History](#10-tab-history)
+11. [Tab: Router Lab](#11-tab-router-lab)
+12. [Tab: Models](#12-tab-models)
+13. [Understanding results](#13-understanding-results)
+14. [Processing modes explained](#14-processing-modes-explained)
+15. [Supabase database](#15-supabase-database)
+16. [Troubleshooting](#16-troubleshooting)
+17. [Demo walkthrough](#17-demo-walkthrough)
 
 ---
 
@@ -114,14 +116,14 @@ These settings appear in the **top header** on inference tabs only.
 |-----|:---------------:|:-------------:|:--------:|
 | Analyze Live | ✓ | ✓ | ✓ |
 | Project Datasets | ✗ | ✓ | ✓ |
-| Showcase / Analytics / History / CNN Models | ✗ | ✗ | ✗ |
+| Showcase / Session Timeline / Analytics / History / Router Lab / CNN Models | ✗ | ✗ | ✗ |
 
 | Control | Options | Purpose |
 |---------|---------|---------|
 | **Processing Mode** | Urban Sound / Animal Vocalization / Smart Auto-Router | Which expert model(s) to use *(Analyze Live only)* |
 | **Backend Model** | MobileNetV2 / ResNet50 / Custom CNN | Which CNN runs inference |
 | **Grad-CAM** | On / Off | Show visual explainability heatmap |
-| **System Status** (sidebar) | Online/Offline, Supabase | Health check |
+| **System Status** (sidebar) | Online/Offline, Supabase, Presentation mode | Health check and demo layout toggle |
 
 **Default settings:**
 - Mode: Urban Sound or Smart Auto-Router
@@ -210,7 +212,34 @@ Click **Run scenario** → full analysis report modal opens (same as Analyze / D
 
 ---
 
-## 8. Tab: Analytics
+## 8. Tab: Session Timeline
+
+Combines **prediction history** and **analytics summary** into one chronological view for the current browser session.
+
+### What you see
+
+**Summary metrics** (top row): total predictions, average latency, last-hour activity, low-confidence count.
+
+**Chronological timeline:** each logged prediction as a card with time, top label, confidence, processing mode, routed domain (if auto), model, source, and inference ms.
+
+### Session export
+
+Click **Export session ZIP** to download a bundle for the current session (`X-Session-Id`):
+
+| File | Contents |
+|------|----------|
+| `session_summary.json` | Session ID, prediction count, dashboard snapshot |
+| `predictions.json` | Full prediction log |
+| `predictions.csv` | Tabular export for spreadsheets |
+| `analytics_dashboard.json` | Aggregated metrics at export time |
+
+Use this for coursework evidence, offline review, or sharing session results without screenshots.
+
+Click **Refresh** after new analyses to update the timeline.
+
+---
+
+## 9. Tab: Analytics
 
 Session metrics from Supabase prediction logs.
 
@@ -234,7 +263,7 @@ Click **Refresh** after running new analyses to update charts.
 
 ---
 
-## 9. Tab: History
+## 10. Tab: History
 
 Predictions saved to Supabase for the current browser session.
 
@@ -257,7 +286,32 @@ Session ID is stored in browser `localStorage`. Clearing site data starts a new 
 
 ---
 
-## 10. Tab: Models
+## 11. Tab: Router Lab
+
+Dedicated view for **Smart Auto-Router** transparency and experimentation.
+
+### When it populates
+
+After you run a prediction with **Smart Auto-Router** on Analyze Live, Project Datasets, or Showcase, the last auto-routed clip is stored as lab context.
+
+### What you see
+
+- Full **router explanation** — urban vs animal probe scores, confidence gap, routing reason
+- **What-if lab** — rerun the **same audio or dataset sample** forced through:
+  - **Urban-only** expert
+  - **Animal-only** expert
+- Side-by-side comparison against the auto route (same label or different)
+- **Open full forced report** links to the standard classification modal
+
+### Tips
+
+- Run Showcase → **Auto-router · urban dog bark** or **Auto-router · animal dog**, then open Router Lab
+- What-if reruns save to Supabase like normal predictions
+- If the panel is empty, run an auto-mode prediction first
+
+---
+
+## 12. Tab: Models
 
 Benchmark stats from training/evaluation. Read-only — does not run inference.
 
@@ -269,7 +323,7 @@ Benchmark stats from training/evaluation. Read-only — does not run inference.
 
 ---
 
-## 11. Understanding results
+## 13. Understanding results
 
 After any analysis (live or dataset), you see:
 
@@ -329,9 +383,13 @@ Available via **Compare All Models** (Analyze Live) or **Compare** (Project Data
 
 Dismissible bar under the header with a short tab map. Reappears only if you clear site data (`sap-help-dismissed` in localStorage).
 
+### Presentation mode
+
+Toggle in the sidebar under **System Status**. Enlarges typography, calms panel styling, and hides the help banner for live demos. Preference stored in `localStorage` (`sap-presentation-mode`).
+
 ---
 
-## 12. Processing modes explained
+## 14. Processing modes explained
 
 ### Urban Sound
 - Routes to UrbanSound8K-trained model
@@ -351,7 +409,7 @@ Dismissible bar under the header with a short tab map. Reappears only if you cle
 
 ---
 
-## 13. Supabase database
+## 15. Supabase database
 
 **Project ID:** `fhpcrtnhqrmjsdcrpqzm`  
 **URL:** https://fhpcrtnhqrmjsdcrpqzm.supabase.co
@@ -379,7 +437,7 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 
 ---
 
-## 14. Troubleshooting
+## 16. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -392,19 +450,24 @@ View data in **Supabase Dashboard → Table Editor → predictions**.
 | Port 8000 in use | Close old backend terminal or change `API_PORT` in `.env` |
 | DB save fails on dataset | Run migration `002_dataset_input_source.sql` |
 
+| Session export empty | Run at least one prediction with `save_to_db`; check backend is online |
+| Router Lab empty | Run Smart Auto-Router on Analyze, Datasets, or Showcase first |
+
 ---
 
-## 15. Demo walkthrough
+## 17. Demo walkthrough
 
 Example order for a short walkthrough:
 
-1. Dismiss or read the help banner under the header
-2. **Showcase** → Run **Urban siren** scenario
-3. In the report: confidence calibration, Mel-spec, Grad-CAM
+1. Dismiss or read the help banner under the header (hidden in presentation mode)
+2. **Showcase** → Run **Auto-router · urban dog bark** scenario
+3. **Router Lab** → review routing explanation; try **Rerun as Urban** / **Rerun as Animal**
 4. **Project Datasets** → analyze a clip; check ground truth
 5. **Analyze Live** → Compare All Models → winner summary cards
-6. **CNN Models** → urban + animal benchmarks and deployment profiles
-7. **History** and **Analytics** after a few runs
+6. **Session Timeline** → review chronological log → **Export session ZIP**
+7. **CNN Models** → urban + animal benchmarks
+8. **History** and **Analytics** after a few runs
+9. Toggle **Presentation mode** in the sidebar for a demo layout
 
 ---
 
@@ -413,6 +476,9 @@ Example order for a short walkthrough:
 | Action | Where |
 |--------|-------|
 | One-click demo | Showcase tab |
+| Session story + ZIP export | Session Timeline tab |
+| Router what-if experiments | Router Lab tab |
+| Demo / presentation layout | Sidebar → Presentation mode |
 | Upload new audio | Analyze Live |
 | Pre-inference validation | Automatic after upload/record |
 | Compare all 3 models on same clip | Analyze Live → Compare All Models |

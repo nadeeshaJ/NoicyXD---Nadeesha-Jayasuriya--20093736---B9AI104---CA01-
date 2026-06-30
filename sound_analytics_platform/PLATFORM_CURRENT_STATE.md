@@ -14,6 +14,9 @@ Web application for classifying environmental audio with trained CNN models on M
 - Live upload and microphone recording
 - Dataset browsing (UrbanSound8K + ESC-50 animals)
 - Showcase tab with one-click curated scenarios
+- Session Timeline tab with session ZIP export
+- Router Lab tab with auto-router what-if reruns
+- Presentation mode toggle for live demos
 - Multi-model comparison with winner summary cards
 - Grad-CAM and confidence calibration in reports
 - Auto-routing between urban and animal experts
@@ -44,15 +47,17 @@ Browser (React + TypeScript)  →  FastAPI API  →  PyTorch (parent repo src/)
 | **Analyze Live** | Upload WAV or record ~4s → preview → classify / compare | Yes — Processing Mode, Backend Model, Grad-CAM |
 | **Project Datasets** | Browse test-split clips; analyze or compare per sample | Partial — Backend Model + Grad-CAM only (domain from dataset) |
 | **Showcase** | One-click curated demo scenarios | No |
+| **Session Timeline** | Chronological session story + analytics summary + ZIP export | No |
 | **Analytics Dashboard** | Session metrics and charts | No |
 | **Prediction History** | Table of saved predictions for this browser session | No |
+| **Router Lab** | Auto-router explanation and urban/animal what-if reruns | No |
 | **CNN Models** | Urban + animal benchmark cards; deployment profiles | No |
 
 ### 2.2 Header control card (context-sensitive)
 
 Controls appear in the **top header**, not the sidebar.
 
-| Control | Analyze Live | Project Datasets | Showcase / Analytics / History / CNN Models |
+| Control | Analyze Live | Project Datasets | Showcase / Timeline / Analytics / History / Router Lab / CNN Models |
 |---------|:------------:|:----------------:|:-------------------------------------------:|
 | Processing Mode | ✓ | ✗ | ✗ |
 | Backend Model | ✓ | ✓ | ✗ |
@@ -76,7 +81,7 @@ Controls appear in the **top header**, not the sidebar.
 
 ### 2.3 Global UI elements
 
-- **Sidebar:** branding, tab navigation, system status (API online/offline, Supabase connected/local)
+- **Sidebar:** branding, tab navigation, system status (API online/offline, Supabase connected/local), **presentation mode** toggle
 - **Help banner:** dismissible tab map below header (`AppHelpBanner.tsx`)
 - **WaveLoader:** inference, dataset analyze/compare, showcase runs, analytics/history load, audio preview
 - **Result modal:** classification report or multi-model comparison report
@@ -171,7 +176,22 @@ Controls appear in the **top header**, not the sidebar.
 
 **UI:** loader on load, empty state, Sync Logs button, error message with retry.
 
-### 3.5 Prediction History
+### 3.5 Session Timeline
+
+**Component:** `SessionTimelinePanel`
+
+**Data sources:** `GET /api/predictions` + `GET /api/analytics/dashboard` (parallel load)
+
+**Features:**
+
+- Summary metric cards from analytics dashboard
+- Vertical chronological timeline of session predictions
+- **Export session ZIP** → `GET /api/reports/session-export`
+- Auto-refreshes when new `saved_prediction_id` is returned from analyze
+
+**ZIP contents:** `session_summary.json`, `predictions.json`, `predictions.csv`, `analytics_dashboard.json`
+
+### 3.6 Prediction History
 
 **Component:** `PredictionHistoryPanel`
 
@@ -191,7 +211,19 @@ Controls appear in the **top header**, not the sidebar.
 - **Winner summary** — fastest, highest confidence, agreement %, suggested pick (`ComparisonWinnerCard`)
 - Per-model table (prediction, latency, checkpoint size)
 
-### 3.6 CNN Models
+### 3.7 Router Lab
+
+**Component:** `RouterLabPanel`
+
+**Context:** Last auto-routed prediction from Analyze Live, Datasets, or Showcase (`router` telemetry present). Stored in `App.tsx` as `routerLabContext`.
+
+**Features:**
+
+- Reuses `RouterExplanationPanel` for probe scores and routing reason
+- **What-if reruns:** force `urban` or `animal` mode on same upload or dataset sample
+- Compares forced results vs auto route; optional link to open full forced report modal
+
+### 3.8 CNN Models
 
 **Component:** `ModelsPanel`
 
@@ -288,6 +320,7 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | GET | `/predictions` | Session prediction history (`limit` param) |
 | GET | `/analytics/dashboard` | Session metrics aggregated from prediction logs |
 | POST | `/reports/export` | ZIP export from prediction JSON payload |
+| GET | `/reports/session-export` | Session ZIP (summary, predictions JSON/CSV, analytics snapshot) |
 
 ---
 
@@ -320,6 +353,8 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | `AudioPreviewPanel.tsx` | Preview validation UI, Run Classifier, Compare All |
 | `DatasetsPanel.tsx` | Dataset browser, analyze/compare per sample |
 | `ShowcasePanel.tsx` | Curated one-click demo scenarios |
+| `SessionTimelinePanel.tsx` | Session story timeline + session ZIP export |
+| `RouterLabPanel.tsx` | Router transparency and what-if forced reruns |
 | `AnalysisResults.tsx` | Classification report modal content |
 | `ConfidenceCalibrationPanel.tsx` | Confidence thresholds and entropy in report |
 | `ModelComparisonPanel.tsx` | Multi-model comparison report |
@@ -332,7 +367,7 @@ Generated server-side when `gradcam=true`. Overlays CNN attention on Mel-spectro
 | `WaveLoader.tsx` | Animated loading state |
 | `MetricCard.tsx` | Reusable KPI card |
 
-**Libraries:** `lib/api.ts` (API client), `lib/session.ts` (session ID), `lib/supabase.ts` (optional direct Supabase for benchmarks), `lib/audio.ts` (recording → WAV)
+**Libraries:** `lib/api.ts` (API client), `lib/session.ts` (session ID), `lib/presentationMode.ts` (demo layout toggle), `lib/supabase.ts` (optional direct Supabase for benchmarks), `lib/audio.ts` (recording → WAV)
 
 ---
 
@@ -378,7 +413,7 @@ From repo root (backend must be running):
 python scripts/verify_system.py
 ```
 
-Runs 31 automated checks across health, datasets, inference modes, Grad-CAM, compare, export, analytics, and history.
+Runs 32 automated checks across health, datasets, inference modes, Grad-CAM, compare, export, session export, analytics, and history.
 
 ---
 
@@ -406,14 +441,14 @@ Pick sample → predict/sample API (domain from sample)
          Modal report + Play Sound via audio stream URL
 ```
 
-### Analytics / history
+### Analytics / history / session export
 
 ```
 Browser session ID → GET /predictions or /analytics/dashboard
                     ↓
          Backend queries Supabase predictions table
                     ↓
-         Aggregated metrics or history table in UI
+         Aggregated metrics, history table, or session ZIP
 ```
 
 ---
@@ -421,6 +456,15 @@ Browser session ID → GET /predictions or /analytics/dashboard
 ## 10. Change log
 
 See **`CHANGELOG.md`** for dated entries.
+
+### Phase B (June 2026)
+
+| Feature | Component |
+|---------|-----------|
+| Session Timeline tab | `SessionTimelinePanel.tsx` |
+| Session ZIP export | `GET /api/reports/session-export`, `build_session_report_zip()` |
+| Router Lab + what-if | `RouterLabPanel.tsx` |
+| Presentation mode | `lib/presentationMode.ts`, `.presentation-mode` in `index.css` |
 
 ### Phase A (June 2026)
 

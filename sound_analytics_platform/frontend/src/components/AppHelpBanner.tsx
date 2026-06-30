@@ -14,10 +14,11 @@ export function AppHelpBanner() {
   }
 
   return (
-    <div className="glass-panel border-accent/20 bg-accent/[0.04] p-4 flex flex-wrap items-start justify-between gap-3 text-sm">
+    <div className="glass-panel border-accent/20 bg-accent/[0.04] p-4 flex flex-wrap items-start justify-between gap-3 text-sm sap-help-banner">
       <div className="text-white/70 text-xs leading-relaxed max-w-3xl">
         <span className="text-white font-semibold">Quick map:</span>{" "}
         Analyze Live for uploads · Project Datasets for labelled test clips · Showcase for one-click demos ·
+        Session Timeline merges history with analytics · Router Lab explains auto-routing ·
         History and Analytics read from your session logs · CNN Models lists benchmark stats.
       </div>
       <button

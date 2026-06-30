@@ -1,5 +1,36 @@
 # Changelog
 
+## June 2026 — Phase B (session tools & router lab)
+
+Additive changes. Core predict → modal → Supabase flow unchanged.
+
+### New: Session Timeline tab
+
+- **Nav:** Sidebar → **Session Timeline**
+- **Component:** `frontend/src/components/SessionTimelinePanel.tsx`
+- **Behaviour:** Merges prediction history with analytics summary metrics in a chronological timeline
+- **Export:** **Export session ZIP** downloads `GET /api/reports/session-export` (summary JSON, predictions JSON/CSV, analytics snapshot)
+
+### New: Router Lab tab
+
+- **Nav:** Sidebar → **Router Lab**
+- **Component:** `frontend/src/components/RouterLabPanel.tsx`
+- **Behaviour:** Shows Smart Auto-Router explanation for the last auto-routed clip; **what-if** reruns force urban-only or animal-only on the same audio/sample
+- **Context:** Captured from Analyze Live, Datasets, or Showcase when `router` telemetry is present
+
+### New: Session export API
+
+- **Endpoint:** `GET /api/reports/session-export` (header `X-Session-Id`)
+- **Service:** `build_session_report_zip()` in `backend/app/services/export_report.py`
+
+### New: Presentation mode
+
+- **Toggle:** Sidebar → System Status → **Presentation mode**
+- **Storage:** `localStorage` key `sap-presentation-mode`
+- **Effect:** Larger typography, hides help banner, calmer panels for live demos (`index.css` `.presentation-mode`)
+
+---
+
 ## June 2026 — Phase A (UI enhancements)
 
 Additive frontend changes only. No changes to core inference API contracts (`/api/predict`, `/api/predict/sample`, etc.).

@@ -282,6 +282,33 @@ def main() -> None:
         check=lambda d: True,  # saved_prediction_id may be null if supabase fails
     )
 
+    # --- 10. Session export ---
+    print("\n[10] Session export")
+    try:
+        r = requests.get(
+            f"{API}/reports/session-export",
+            headers=headers(),
+            timeout=30,
+        )
+        if r.status_code == 200:
+            zf = zipfile.ZipFile(io.BytesIO(r.content))
+            names = zf.namelist()
+            required = {
+                "session_summary.json",
+                "predictions.json",
+                "predictions.csv",
+                "analytics_dashboard.json",
+            }
+            missing = required - set(names)
+            if missing:
+                fail("GET /reports/session-export", f"missing files: {missing}")
+            else:
+                ok("GET /reports/session-export")
+        else:
+            fail("GET /reports/session-export", f"HTTP {r.status_code}: {r.text[:200]}")
+    except Exception as exc:
+        fail("GET /reports/session-export", str(exc))
+
     # --- Summary ---
     print(f"\n=== RESULTS: {len(passed)} passed, {len(failed)} failed ===")
     if failed:

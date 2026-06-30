@@ -3,8 +3,11 @@ import {
   BrainCircuit,
   Database,
   FolderOpen,
+  GitBranch,
   History,
+  Monitor,
   Radar,
+  Route,
   Sparkles,
   Waves,
 } from "lucide-react";
@@ -19,6 +22,8 @@ import { ModelsPanel } from "./components/ModelsPanel";
 import { ShowcasePanel } from "./components/ShowcasePanel";
 import { ModelComparisonPanel } from "./components/ModelComparisonPanel";
 import { PredictionHistoryPanel } from "./components/PredictionHistoryPanel";
+import { RouterLabPanel, type RouterLabContext } from "./components/RouterLabPanel";
+import { SessionTimelinePanel } from "./components/SessionTimelinePanel";
 import {
   checkHealth,
   compareModels,
@@ -31,11 +36,16 @@ import {
   type PredictResult,
   type ProcessingMode,
 } from "./lib/api";
+import {
+  applyPresentationMode,
+  getPresentationMode,
+  setPresentationMode,
+} from "./lib/presentationMode";
 import { WaveLoader } from "./components/WaveLoader";
 
 import { fetchBenchmarksFromSupabase, supabaseConfigured } from "./lib/supabase";
 
-type Tab = "analyze" | "datasets" | "showcase" | "analytics" | "history" | "models";
+type Tab = "analyze" | "datasets" | "showcase" | "timeline" | "analytics" | "history" | "router" | "models";
 
 const modeOptions: Array<{ id: ProcessingMode; label: string }> = [
   { id: "urban", label: "Urban Sound" },
@@ -87,6 +97,27 @@ export default function App() {
   const [apiStatus, setApiStatus] = useState<string>("Checking API...");
   const [checkpointsReady, setCheckpointsReady] = useState(true);
   const [checkpointSummary, setCheckpointSummary] = useState("");
+  const [routerLabContext, setRouterLabContext] = useState<RouterLabContext | null>(null);
+  const [presentationMode, setPresentationModeState] = useState(() => getPresentationMode());
+
+  function syncRouterLabContext(
+    payload: PredictResult,
+    audio: PendingAudio | null,
+    domain: "urban" | "animal" | null,
+  ) {
+    if (payload.router) {
+      setRouterLabContext({
+        result: payload,
+        pendingAudio: audio,
+        datasetDomain: domain,
+        sampleId: payload.sample_id ?? null,
+      });
+    }
+  }
+
+  useEffect(() => {
+    applyPresentationMode(presentationMode);
+  }, [presentationMode]);
 
   useEffect(() => {
     checkHealth()
@@ -199,21 +230,22 @@ export default function App() {
     setError(null);
     setResultDatasetDomain(null);
     try {
-      setResult(
-        await predictAudio({
-          file: pendingAudio.blob,
-          filename: pendingAudio.filename,
-          mode,
-          modelName,
-          inputSource: pendingAudio.source,
-          gradcam,
-        }),
-      );
-      setAnalysisAudio({
+      const payload = await predictAudio({
+        file: pendingAudio.blob,
+        filename: pendingAudio.filename,
+        mode,
+        modelName,
+        inputSource: pendingAudio.source,
+        gradcam,
+      });
+      setResult(payload);
+      const audio = {
         blob: pendingAudio.blob,
         source: pendingAudio.source,
         filename: pendingAudio.filename,
-      });
+      };
+      setAnalysisAudio(audio);
+      syncRouterLabContext(payload, audio, null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Prediction failed.");
     } finally {
@@ -262,8 +294,10 @@ export default function App() {
                 { id: "analyze", label: "Analyze Live", icon: Radar },
                 { id: "datasets", label: "Project Datasets", icon: FolderOpen },
                 { id: "showcase", label: "Showcase", icon: Sparkles },
+                { id: "timeline", label: "Session Timeline", icon: GitBranch },
                 { id: "analytics", label: "Analytics Dashboard", icon: BarChart3 },
                 { id: "history", label: "Prediction History", icon: History },
+                { id: "router", label: "Router Lab", icon: Route },
                 { id: "models", label: "CNN Models", icon: BrainCircuit },
               ].map(({ id, label, icon: Icon }) => (
                 <button
@@ -293,6 +327,22 @@ export default function App() {
               <span className={`h-2 w-2 rounded-full ${supabaseConfigured ? "bg-status-success shadow-[0_0_10px_#10b981]" : "bg-status-warning shadow-[0_0_10px_#f59e0b]"}`}></span>
               <span>DB: {supabaseConfigured ? "Supabase Connected" : "Local Database Mode"}</span>
             </div>
+            <button
+              type="button"
+              className={`mt-2 w-full rounded-xl border px-3 py-2 text-xs font-semibold transition flex items-center justify-center gap-2 ${
+                presentationMode
+                  ? "border-accent/30 bg-accent/10 text-accent-soft"
+                  : "border-white/[0.08] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06]"
+              }`}
+              onClick={() => {
+                const next = !presentationMode;
+                setPresentationMode(next);
+                setPresentationModeState(next);
+              }}
+            >
+              <Monitor size={14} />
+              {presentationMode ? "Presentation mode on" : "Presentation mode"}
+            </button>
           </div>
         </aside>
 
@@ -436,7 +486,9 @@ export default function App() {
                 onResult={(payload, sample) => {
                   setResult(payload);
                   setAnalysisAudio(null);
-                  setResultDatasetDomain((sample?.domain as "urban" | "animal") ?? null);
+                  const domain = (sample?.domain as "urban" | "animal") ?? null;
+                  setResultDatasetDomain(domain);
+                  syncRouterLabContext(payload, null, domain);
                   setComparison(null);
                   setError(null);
                 }}
@@ -456,7 +508,9 @@ export default function App() {
                 onResult={(payload, sample) => {
                   setResult(payload);
                   setAnalysisAudio(null);
-                  setResultDatasetDomain((sample?.domain as "urban" | "animal") ?? null);
+                  const domain = (sample?.domain as "urban" | "animal") ?? null;
+                  setResultDatasetDomain(domain);
+                  syncRouterLabContext(payload, null, domain);
                   setComparison(null);
                   setError(null);
                 }}
@@ -466,12 +520,31 @@ export default function App() {
             </div>
           ) : null}
 
+          {tab === "timeline" ? (
+            <SessionTimelinePanel
+              active={tab === "timeline"}
+              refreshKey={result?.saved_prediction_id}
+            />
+          ) : null}
+
           {tab === "analytics" ? <AnalyticsDashboardPanel /> : null}
 
           {tab === "history" ? (
             <PredictionHistoryPanel
               active={tab === "history"}
               refreshKey={result?.saved_prediction_id}
+            />
+          ) : null}
+
+          {tab === "router" ? (
+            <RouterLabPanel
+              context={routerLabContext}
+              modelName={modelName}
+              gradcam={gradcam}
+              onOpenResult={(payload) => {
+                setResult(payload);
+                setComparison(null);
+              }}
             />
           ) : null}
 

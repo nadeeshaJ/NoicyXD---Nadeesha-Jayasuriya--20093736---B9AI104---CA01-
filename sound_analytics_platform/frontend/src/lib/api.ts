@@ -336,6 +336,17 @@ export async function exportPredictionReport(result: PredictResult): Promise<Blo
   return response.blob();
 }
 
+export async function exportSessionReport(limit = 100): Promise<Blob> {
+  const response = await fetch(`${API_BASE}/api/reports/session-export?limit=${limit}`, {
+    headers: { "X-Session-Id": getSessionId() },
+  });
+  if (!response.ok) {
+    const detail = await response.text();
+    throw new Error(detail || "Session export failed.");
+  }
+  return response.blob();
+}
+
 export function pngDataUrl(base64: string): string {
   return `data:image/png;base64,${base64}`;
 }

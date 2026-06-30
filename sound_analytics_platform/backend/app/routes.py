@@ -22,7 +22,7 @@ from app.services.datasets import (
     list_test_samples,
     resolve_sample_audio,
 )
-from app.services.export_report import build_prediction_report_zip
+from app.services.export_report import build_prediction_report_zip, build_session_report_zip
 from app.services.inference import inference_service
 from app.services.predictions_repo import (
     fetch_model_benchmarks,
@@ -554,4 +554,32 @@ async def export_prediction_report(payload: PredictResponse):
         content=zip_bytes,
         media_type="application/zip",
         headers={"Content-Disposition": 'attachment; filename="sound_analysis_report.zip"'},
+    )
+
+
+@router.get(
+    "/reports/session-export",
+    tags=["Reports"],
+    summary="Export session report ZIP",
+    response_description="ZIP with session summary, prediction log CSV/JSON, and analytics snapshot.",
+)
+def export_session_report(
+    x_session_id: SessionHeader,
+    limit: int = 100,
+):
+    """Download predictions and dashboard metrics for the current browser session."""
+    try:
+        predictions = fetch_recent_predictions(x_session_id, limit=min(limit, 200))
+        dashboard = build_dashboard_metrics(x_session_id, limit=min(limit, 200))
+        zip_bytes = build_session_report_zip(
+            session_id=x_session_id,
+            predictions=predictions,
+            dashboard=dashboard,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Session export failed: {exc}") from exc
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="session_report.zip"'},
     )

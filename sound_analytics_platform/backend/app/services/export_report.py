@@ -69,3 +69,50 @@ def build_prediction_report_zip(payload: dict[str, Any]) -> bytes:
 
     buffer.seek(0)
     return buffer.getvalue()
+
+
+def build_session_report_zip(
+    *,
+    session_id: str,
+    predictions: list[dict[str, Any]],
+    dashboard: dict[str, Any],
+) -> bytes:
+    """ZIP with session summary, prediction log, and analytics snapshot."""
+    buffer = io.BytesIO()
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
+    summary = {
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "session_id": session_id,
+        "prediction_count": len(predictions),
+        "dashboard": dashboard,
+    }
+
+    csv_lines = [
+        "id,created_at,input_source,processing_mode,model_key,top_label,top_confidence,inference_ms,reliability_level",
+    ]
+    for row in predictions:
+        csv_lines.append(
+            ",".join(
+                [
+                    str(row.get("id", "")),
+                    str(row.get("created_at", "")),
+                    str(row.get("input_source", "")),
+                    str(row.get("processing_mode", "")),
+                    str(row.get("model_key", "")),
+                    str(row.get("top_label", "")),
+                    str(row.get("top_confidence", "")),
+                    str(row.get("inference_ms", "")),
+                    str(row.get("reliability_level", "") or ""),
+                ]
+            )
+        )
+
+    with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("session_summary.json", json.dumps(summary, indent=2, default=str))
+        zf.writestr("predictions.json", json.dumps(predictions, indent=2, default=str))
+        zf.writestr("analytics_dashboard.json", json.dumps(dashboard, indent=2, default=str))
+        zf.writestr("predictions.csv", "\n".join(csv_lines))
+
+    buffer.seek(0)
+    return buffer.getvalue()

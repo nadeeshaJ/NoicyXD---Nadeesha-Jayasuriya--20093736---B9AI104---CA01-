@@ -31,6 +31,9 @@ This folder contains the **web app** (React + FastAPI + Supabase). It sits insid
 
 - **Urban / Animal / Auto-Router** processing modes  
 - **Showcase tab** — one-click curated demo scenarios  
+- **Session Timeline** — chronological session story + ZIP export  
+- **Router Lab** — auto-router transparency and urban/animal what-if reruns  
+- **Presentation mode** — larger demo layout toggle in sidebar  
 - **Router panel** — dual-expert scores and routing reason (auto mode)  
 - **Reliability labels** — High / Medium / Low  
 - **Confidence calibration** — thresholds and entropy in analysis reports  
@@ -42,7 +45,7 @@ This folder contains the **web app** (React + FastAPI + Supabase). It sits insid
 - **Prediction history** in Supabase (per browser session)  
 - **Analytics dashboard** — class/model distributions, latency trend  
 - **CNN Models tab** — urban + animal benchmarks, deployment profiles  
-- **ZIP report export** — JSON, CSV, waveform, Mel-spec, Grad-CAM PNGs  
+- **ZIP report export** — single-analysis ZIP or full session ZIP  
 - **Dataset samples** — inference on UrbanSound8K / ESC-50 test clips  
 ### Deployed models (UrbanSound8K fold-10)
 
@@ -210,10 +213,13 @@ Expected: `"status":"ok"` and `"supabase_configured":true`.
 1. **Showcase** or **Analyze Live** — run a classification  
 2. Review validation preview (upload) or scenario card (Showcase)  
 3. **Run Analysis** — view prediction, calibration panel, Grad-CAM, benchmarks  
-4. **Compare All Models** — winner summary + per-model table  
-5. **History** — past predictions from Supabase (per browser session)  
-6. **Analytics** — class counts and latency trends  
-7. **Export Report** — download ZIP with summary + images  
+4. **Router Lab** — after auto-mode run, try urban/animal what-if reruns  
+5. **Compare All Models** — winner summary + per-model table  
+6. **Session Timeline** — chronological log + **Export session ZIP**  
+7. **History** — past predictions from Supabase (per browser session)  
+8. **Analytics** — class counts and latency trends  
+9. **Export Report** — download single-analysis ZIP with summary + images  
+10. **Presentation mode** — sidebar toggle for demo layout  
 
 ---
 
@@ -224,7 +230,8 @@ Expected: `"status":"ok"` and `"supabase_configured":true`.
 | GET | `/api/health` | Service and Supabase status |
 | POST | `/api/predict` | Upload audio → inference + DB log |
 | POST | `/api/predict/sample` | Inference on dataset sample |
-| POST | `/api/reports/export` | Download analysis ZIP |
+| POST | `/api/reports/export` | Download single-analysis ZIP |
+| GET | `/api/reports/session-export` | Download session ZIP (history + analytics) |
 | GET | `/api/predictions` | Session prediction history |
 | GET | `/api/analytics/dashboard` | Monitoring metrics |
 | GET | `/api/models` | Model benchmark table |
