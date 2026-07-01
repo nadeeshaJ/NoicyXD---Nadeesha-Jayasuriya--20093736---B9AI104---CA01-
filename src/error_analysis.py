@@ -526,10 +526,17 @@ def run_urban_benchmarks(cfg: dict, report_dir: Path) -> list[dict]:
     for model_name in ("custom_cnn", "resnet50", "mobilenetv2"):
         checkpoint = urban_dir / model_name / "best_model.pt"
         summary_path = urban_dir / model_name / "training_summary.json"
+        metrics_path = urban_dir / model_name / "test_metrics.json"
         training_summary = {}
         if summary_path.exists():
             with summary_path.open(encoding="utf-8") as f:
                 training_summary = json.load(f)
+        test_macro_recall = None
+        if metrics_path.exists():
+            with metrics_path.open(encoding="utf-8") as f:
+                test_macro_recall = (
+                    json.load(f).get("classification_report", {}).get("macro avg", {}).get("recall")
+                )
 
         model = load_trained_model(model_name, num_classes, checkpoint, device)
         bench = benchmark_inference(model, device, model_name, checkpoint)
@@ -544,6 +551,7 @@ def run_urban_benchmarks(cfg: dict, report_dir: Path) -> list[dict]:
             "training_time_sec": train_time_sec,
             "training_time_per_epoch_sec": epoch_time_sec,
             "test_accuracy": training_summary.get("test_metrics", {}).get("accuracy"),
+            "test_macro_recall": test_macro_recall,
             "test_macro_f1": training_summary.get("test_metrics", {}).get("macro_f1"),
         }
         rows.append(row)

@@ -5,6 +5,7 @@ const ANIMAL_EXPERT = {
   model_key: "mobilenetv2_animal",
   display_name: "MobileNetV2 (Animal Expert)",
   test_accuracy: 0.6,
+  test_macro_recall: 0.592,
   test_macro_f1: 0.607,
   inference_ms_mean: 4.2,
   model_file_size_mb: 8.76,
@@ -75,6 +76,10 @@ function BenchmarkCard({ row }: { row: ModelBenchmarkRow | typeof ANIMAL_EXPERT 
         <div className="flex justify-between border-b border-white/[0.05] pb-2">
           <span className="text-white/40">Test accuracy</span>
           <span className="font-semibold text-white">{row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</span>
+        </div>
+        <div className="flex justify-between border-b border-white/[0.05] pb-2">
+          <span className="text-white/40">Macro recall</span>
+          <span className="font-semibold text-white">{row.test_macro_recall ? row.test_macro_recall.toFixed(3) : "—"}</span>
         </div>
         <div className="flex justify-between border-b border-white/[0.05] pb-2">
           <span className="text-white/40">Macro F1</span>

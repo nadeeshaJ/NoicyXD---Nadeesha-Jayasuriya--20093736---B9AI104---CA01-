@@ -19,7 +19,12 @@ if ($envContent -match '(?m)^PUBLIC_URL=(.+)$') {
 
 $checkpoints = Get-ChildItem -Path "experiments" -Recurse -Filter "best_model.pt" -ErrorAction SilentlyContinue
 if (-not $checkpoints) {
-    Write-Warning "No best_model.pt files found under experiments/. Upload checkpoints before inference."
+    Write-Error @"
+No best_model.pt files under experiments/.
+Inference will fail. Install checkpoints first:
+  python scripts/setup_checkpoints.py --source /path/to/trained/experiments
+See experiments/README.md
+"@
 }
 
 docker compose up -d --build

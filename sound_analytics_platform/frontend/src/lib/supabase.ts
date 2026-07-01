@@ -31,6 +31,7 @@ export type ModelBenchmarkRow = {
   model_file_size_mb: number;
   inference_ms_mean: number;
   test_accuracy: number | null;
+  test_macro_recall: number | null;
   test_macro_f1: number | null;
   is_deployed: boolean;
   notes: string | null;

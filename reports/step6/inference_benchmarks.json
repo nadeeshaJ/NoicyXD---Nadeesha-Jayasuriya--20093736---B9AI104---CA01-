@@ -13,6 +13,7 @@
       "training_time_sec": 4252.1,
       "training_time_per_epoch_sec": 202.5,
       "test_accuracy": 0.7502986857825568,
+      "test_macro_recall": 0.7594385489170759,
       "test_macro_f1": 0.7673285837997852
     },
     {
@@ -28,6 +29,7 @@
       "training_time_sec": 8293.4,
       "training_time_per_epoch_sec": 286.0,
       "test_accuracy": 0.8124253285543608,
+      "test_macro_recall": 0.8113435442650367,
       "test_macro_f1": 0.8110973769457885
     },
     {
@@ -43,6 +45,7 @@
       "training_time_sec": 1974.4,
       "training_time_per_epoch_sec": 65.8,
       "test_accuracy": 0.8267622461170848,
+      "test_macro_recall": 0.8278681588524185,
       "test_macro_f1": 0.8310015598940783
     }
   ]

@@ -137,6 +137,7 @@ def list_models() -> list[ModelBenchmark]:
             model_file_size_mb=row["model_file_size_mb"],
             inference_ms_mean=row["inference_ms_mean"],
             test_accuracy=row.get("test_accuracy"),
+            test_macro_recall=row.get("test_macro_recall"),
             test_macro_f1=row.get("test_macro_f1"),
             is_deployed=key == "mobilenetv2",
             notes=None,

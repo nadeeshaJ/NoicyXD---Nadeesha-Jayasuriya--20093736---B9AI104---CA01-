@@ -101,6 +101,7 @@ class ModelBenchmark(BaseModel):
     model_file_size_mb: float
     inference_ms_mean: float
     test_accuracy: float | None = None
+    test_macro_recall: float | None = None
     test_macro_f1: float | None = None
     is_deployed: bool = Field(default=False, description="True for the production MobileNetV2 model.")
     notes: str | None = None

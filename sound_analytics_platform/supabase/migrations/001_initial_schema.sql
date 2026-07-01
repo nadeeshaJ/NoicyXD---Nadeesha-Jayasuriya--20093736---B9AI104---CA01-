@@ -59,6 +59,7 @@ create table if not exists public.model_benchmarks (
     inference_ms_mean numeric(8, 3) not null,
     inference_ms_std numeric(8, 3),
     test_accuracy numeric(8, 6),
+    test_macro_recall numeric(8, 6),
     test_macro_f1 numeric(8, 6),
     training_epochs int,
     device text,
@@ -163,22 +164,22 @@ on conflict (domain, class_key) do nothing;
 -- ---------------------------------------------------------------------------
 insert into public.model_benchmarks (
     model_key, display_name, total_parameters, model_file_size_mb,
-    inference_ms_mean, inference_ms_std, test_accuracy, test_macro_f1,
+    inference_ms_mean, inference_ms_std, test_accuracy, test_macro_recall, test_macro_f1,
     training_epochs, device, is_deployed, notes
 ) values
     (
         'custom_cnn', 'Custom CNN', 6666186, 25.43,
-        0.912, 0.159, 0.750299, 0.767329,
+        0.912, 0.159, 0.750299, 0.759439, 0.767329,
         21, 'cuda', false, 'Baseline CNN trained from scratch on Mel-spectrogram RGB images.'
     ),
     (
         'resnet50', 'ResNet50', 23528522, 90.05,
-        4.408, 0.443, 0.812425, 0.811097,
+        4.408, 0.443, 0.812425, 0.811344, 0.811097,
         29, 'cuda', false, 'Transfer learning with ImageNet backbone.'
     ),
     (
         'mobilenetv2', 'MobileNetV2 (Deployed)', 2236682, 8.76,
-        4.202, 0.374, 0.826762, 0.831002,
+        4.202, 0.374, 0.826762, 0.827868, 0.831002,
         30, 'cuda', true, 'Production deployment model — best accuracy/efficiency trade-off.'
     )
 on conflict (model_key) do update set
@@ -188,6 +189,7 @@ on conflict (model_key) do update set
     inference_ms_mean = excluded.inference_ms_mean,
     inference_ms_std = excluded.inference_ms_std,
     test_accuracy = excluded.test_accuracy,
+    test_macro_recall = excluded.test_macro_recall,
     test_macro_f1 = excluded.test_macro_f1,
     training_epochs = excluded.training_epochs,
     device = excluded.device,

@@ -20,9 +20,11 @@ if [[ -n "${PUBLIC_URL:-}" ]]; then
 fi
 
 if ! find experiments -name 'best_model.pt' -print -quit >/dev/null 2>&1; then
-  echo "WARNING: No best_model.pt files found under experiments/."
-  echo "Upload trained checkpoints before running inference, e.g.:"
-  echo "  experiments/urbansound8k/mobilenetv2/best_model.pt"
+  echo "ERROR: No best_model.pt files under experiments/."
+  echo "Inference will fail. Install checkpoints first:"
+  echo "  python scripts/setup_checkpoints.py --source /path/to/trained/experiments"
+  echo "See experiments/README.md"
+  exit 1
 fi
 
 docker compose up -d --build

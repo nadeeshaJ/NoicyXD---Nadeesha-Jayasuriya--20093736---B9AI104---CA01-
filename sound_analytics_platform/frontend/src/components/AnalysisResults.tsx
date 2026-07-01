@@ -140,6 +140,7 @@ export function AnalysisResults({ result, benchmarks, modelName, audioSource }: 
                 </div>
                 <div className="space-y-1.5 text-xs text-white/55">
                   <div className="flex justify-between"><span>Accuracy:</span><span className="text-white font-semibold">{row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</span></div>
+                  <div className="flex justify-between"><span>Macro recall:</span><span className="text-white font-semibold">{row.test_macro_recall ? row.test_macro_recall.toFixed(3) : "—"}</span></div>
                   <div className="flex justify-between"><span>Latency:</span><span className="text-white font-mono">{row.inference_ms_mean} ms</span></div>
                   <div className="flex justify-between"><span>Size:</span><span className="text-white font-mono">{row.model_file_size_mb} MB</span></div>
                 </div>
