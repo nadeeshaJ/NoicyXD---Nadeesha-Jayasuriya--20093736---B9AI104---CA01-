@@ -11,6 +11,12 @@ import pandas as pd
 from app.services.supabase_client import ensure_ml_path, get_ml_project_root
 
 
+def _basename_from_any_path(path_str: str) -> str:
+    """Extract WAV filename from Windows, POSIX, or bare filename strings."""
+    normalized = str(path_str).strip().replace("\\", "/")
+    return normalized.rsplit("/", 1)[-1]
+
+
 def _load_step1_summary() -> dict[str, Any]:
     path = get_ml_project_root() / "reports" / "step1" / "step1_summary.json"
     if not path.exists():
@@ -26,6 +32,51 @@ def _split_csv(domain: str) -> Path:
     cfg = load_config()
     key = "urbansound8k" if domain == "urban" else "esc50_animals"
     return project_path(cfg["datasets"][key]["splits_dir"]) / "test_processed.csv"
+
+
+def _raw_audio_root(domain: str) -> Path:
+    ensure_ml_path()
+    from src.utils import load_config, project_path
+
+    cfg = load_config()
+    key = "urbansound8k" if domain == "urban" else "esc50_animals"
+    return project_path(cfg["datasets"][key]["raw_dir"]) / "audio"
+
+
+def _lookup_split_row(df: pd.DataFrame, sample_id: str) -> pd.Series | None:
+    filename = _basename_from_any_path(sample_id)
+    names = df["audio_path"].astype(str).map(_basename_from_any_path)
+    match = df[names == filename]
+    if match.empty:
+        return None
+    return match.iloc[0]
+
+
+def _resolve_raw_audio_path(domain: str, sample_id: str) -> Path:
+    """Resolve a dataset WAV on any OS — never trust absolute paths baked into CSVs."""
+    filename = _basename_from_any_path(sample_id)
+    audio_root = _raw_audio_root(domain)
+
+    if domain == "urban":
+        candidates = [audio_root / "fold10" / filename]
+        candidates.extend(sorted(audio_root.glob(f"fold*/{filename}")))
+    else:
+        candidates = [audio_root / filename]
+
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    raise FileNotFoundError(
+        f"Audio file not found: {filename} (domain={domain}). "
+        f"Looked under {audio_root}. Ensure data/raw is mounted on the server."
+    )
+
+
+def _portable_audio_ref(domain: str, filename: str) -> str:
+    if domain == "urban":
+        return f"data/raw/urbansound8k/audio/fold10/{filename}"
+    return f"data/raw/esc50/audio/{filename}"
 
 
 def get_dataset_overview() -> list[dict[str, Any]]:
@@ -79,15 +130,15 @@ def list_test_samples(
 
     samples = []
     for _, row in df.iterrows():
-        audio_path = Path(str(row["audio_path"]))
+        filename = _basename_from_any_path(row["audio_path"])
         samples.append(
             {
-                "sample_id": audio_path.name,
-                "filename": audio_path.name,
+                "sample_id": filename,
+                "filename": filename,
                 "label": row["label"],
                 "class_idx": int(row["class_idx"]),
-                "audio_path": str(audio_path),
-                "image_path": str(row["image_path"]),
+                "audio_path": _portable_audio_ref(domain, filename),
+                "image_path": str(row.get("image_path", "")),
                 "domain": domain,
             }
         )
@@ -123,15 +174,15 @@ def get_curated_samples(domain: str) -> list[dict[str, Any]]:
         if rows.empty:
             continue
         row = rows.iloc[0]
-        audio_path = Path(str(row["audio_path"]))
+        filename = _basename_from_any_path(row["audio_path"])
         results.append(
             {
-                "sample_id": audio_path.name,
-                "filename": audio_path.name,
+                "sample_id": filename,
+                "filename": filename,
                 "label": label,
                 "note": notes.get(label, f"{label} from project test split"),
-                "audio_path": str(audio_path),
-                "image_path": str(row["image_path"]),
+                "audio_path": _portable_audio_ref(domain, filename),
+                "image_path": str(row.get("image_path", "")),
                 "domain": domain,
                 "curated": True,
             }
@@ -140,31 +191,18 @@ def get_curated_samples(domain: str) -> list[dict[str, Any]]:
 
 
 def resolve_sample_audio(domain: str, sample_id: str) -> tuple[Path, str, str]:
+    filename = _basename_from_any_path(sample_id)
     split_path = _split_csv(domain)
+    label: str | None = None
+
     if split_path.exists():
         df = pd.read_csv(split_path)
-        match = df[df["audio_path"].astype(str).str.endswith(sample_id)]
-        if not match.empty:
-            row = match.iloc[0]
-            orig_path = Path(str(row["audio_path"]))
-            parts = orig_path.parts
-            try:
-                data_idx = parts.index("data")
-                resolved_path = get_ml_project_root().joinpath(*parts[data_idx:])
-            except ValueError:
-                resolved_path = get_ml_project_root() / "data" / ("raw/urbansound8k/audio/fold10" if domain == "urban" else "raw/esc50/audio") / sample_id
-            return resolved_path, str(row["label"]), sample_id
+        row = _lookup_split_row(df, filename)
+        if row is not None:
+            label = str(row["label"])
 
-    curated = get_curated_samples(domain)
-    for item in curated:
-        if item["sample_id"] == sample_id:
-            orig_path = Path(item["audio_path"])
-            parts = orig_path.parts
-            try:
-                data_idx = parts.index("data")
-                resolved_path = get_ml_project_root().joinpath(*parts[data_idx:])
-            except ValueError:
-                resolved_path = get_ml_project_root() / "data" / ("raw/urbansound8k/audio/fold10" if domain == "urban" else "raw/esc50/audio") / sample_id
-            return resolved_path, item["label"], sample_id
+    if label is None:
+        raise FileNotFoundError(f"Sample not found: {filename}")
 
-    raise FileNotFoundError(f"Sample not found: {sample_id}")
+    resolved_path = _resolve_raw_audio_path(domain, filename)
+    return resolved_path, label, filename

@@ -1,31 +1,31 @@
 image_path,audio_path,label,class_idx,status
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-198891-C-8.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-198891-C-8.wav,sheep,8,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-257858-A-2.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-257858-A-2.wav,pig,2,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-200339-A-1.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-200339-A-1.wav,rooster,1,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-244315-C-6.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-244315-C-6.wav,hen,6,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\1-202111-A-3.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\1-202111-A-3.wav,cow,3,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-9032-A-0.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-9032-A-0.wav,dog,0,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\2-108766-A-9.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\2-108766-A-9.wav,crow,9,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-20861-A-8.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-20861-A-8.wav,sheep,8,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-126358-B-3.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-126358-B-3.wav,cow,3,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-156026-A-4.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-156026-A-4.wav,frog,4,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-164216-A-6.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-164216-A-6.wav,hen,6,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\1-17585-A-7.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\1-17585-A-7.wav,insects,7,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\2-96460-A-1.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\2-96460-A-1.wav,rooster,1,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\1-69641-A-3.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\1-69641-A-3.wav,cow,3,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\4-133047-A-5.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\4-133047-A-5.wav,cat,5,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\1-49409-A-8.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\1-49409-A-8.wav,sheep,8,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-146972-A-5.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-146972-A-5.wav,cat,5,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-253084-C-2.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-253084-C-2.wav,pig,2,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\2-109231-B-9.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\2-109231-B-9.wav,crow,9,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\2-118964-A-0.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\2-118964-A-0.wav,dog,0,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\1-39835-A-9.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\1-39835-A-9.wav,crow,9,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\4-130584-A-4.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\4-130584-A-4.wav,frog,4,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-105235-A-7.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-105235-A-7.wav,insects,7,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\4-120160-A-5.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\4-120160-A-5.wav,cat,5,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-103416-A-2.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-103416-A-2.wav,pig,2,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\2-196688-A-8.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\2-196688-A-8.wav,sheep,8,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\5-214869-A-9.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\5-214869-A-9.wav,crow,9,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-145382-A-1.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-145382-A-1.wav,rooster,1,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\4-253649-A-6.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\4-253649-A-6.wav,hen,6,processed
-D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\processed\esc50_animals\images\3-70962-C-4.png,D:\DBS - Sem 2\Deep Learning\CA01\noicy_XD\data\raw\esc50\audio\3-70962-C-4.wav,frog,4,processed
+data/processed/esc50_animals/images/5-198891-C-8.png,data/raw/esc50/audio/5-198891-C-8.wav,sheep,8,processed
+data/processed/esc50_animals/images/3-257858-A-2.png,data/raw/esc50/audio/3-257858-A-2.wav,pig,2,processed
+data/processed/esc50_animals/images/5-200339-A-1.png,data/raw/esc50/audio/5-200339-A-1.wav,rooster,1,processed
+data/processed/esc50_animals/images/5-244315-C-6.png,data/raw/esc50/audio/5-244315-C-6.wav,hen,6,processed
+data/processed/esc50_animals/images/1-202111-A-3.png,data/raw/esc50/audio/1-202111-A-3.wav,cow,3,processed
+data/processed/esc50_animals/images/5-9032-A-0.png,data/raw/esc50/audio/5-9032-A-0.wav,dog,0,processed
+data/processed/esc50_animals/images/2-108766-A-9.png,data/raw/esc50/audio/2-108766-A-9.wav,crow,9,processed
+data/processed/esc50_animals/images/3-20861-A-8.png,data/raw/esc50/audio/3-20861-A-8.wav,sheep,8,processed
+data/processed/esc50_animals/images/3-126358-B-3.png,data/raw/esc50/audio/3-126358-B-3.wav,cow,3,processed
+data/processed/esc50_animals/images/5-156026-A-4.png,data/raw/esc50/audio/5-156026-A-4.wav,frog,4,processed
+data/processed/esc50_animals/images/3-164216-A-6.png,data/raw/esc50/audio/3-164216-A-6.wav,hen,6,processed
+data/processed/esc50_animals/images/1-17585-A-7.png,data/raw/esc50/audio/1-17585-A-7.wav,insects,7,processed
+data/processed/esc50_animals/images/2-96460-A-1.png,data/raw/esc50/audio/2-96460-A-1.wav,rooster,1,processed
+data/processed/esc50_animals/images/1-69641-A-3.png,data/raw/esc50/audio/1-69641-A-3.wav,cow,3,processed
+data/processed/esc50_animals/images/4-133047-A-5.png,data/raw/esc50/audio/4-133047-A-5.wav,cat,5,processed
+data/processed/esc50_animals/images/1-49409-A-8.png,data/raw/esc50/audio/1-49409-A-8.wav,sheep,8,processed
+data/processed/esc50_animals/images/3-146972-A-5.png,data/raw/esc50/audio/3-146972-A-5.wav,cat,5,processed
+data/processed/esc50_animals/images/3-253084-C-2.png,data/raw/esc50/audio/3-253084-C-2.wav,pig,2,processed
+data/processed/esc50_animals/images/2-109231-B-9.png,data/raw/esc50/audio/2-109231-B-9.wav,crow,9,processed
+data/processed/esc50_animals/images/2-118964-A-0.png,data/raw/esc50/audio/2-118964-A-0.wav,dog,0,processed
+data/processed/esc50_animals/images/1-39835-A-9.png,data/raw/esc50/audio/1-39835-A-9.wav,crow,9,processed
+data/processed/esc50_animals/images/4-130584-A-4.png,data/raw/esc50/audio/4-130584-A-4.wav,frog,4,processed
+data/processed/esc50_animals/images/3-105235-A-7.png,data/raw/esc50/audio/3-105235-A-7.wav,insects,7,processed
+data/processed/esc50_animals/images/4-120160-A-5.png,data/raw/esc50/audio/4-120160-A-5.wav,cat,5,processed
+data/processed/esc50_animals/images/5-103416-A-2.png,data/raw/esc50/audio/5-103416-A-2.wav,pig,2,processed
+data/processed/esc50_animals/images/2-196688-A-8.png,data/raw/esc50/audio/2-196688-A-8.wav,sheep,8,processed
+data/processed/esc50_animals/images/5-214869-A-9.png,data/raw/esc50/audio/5-214869-A-9.wav,crow,9,processed
+data/processed/esc50_animals/images/3-145382-A-1.png,data/raw/esc50/audio/3-145382-A-1.wav,rooster,1,processed
+data/processed/esc50_animals/images/4-253649-A-6.png,data/raw/esc50/audio/4-253649-A-6.wav,hen,6,processed
+data/processed/esc50_animals/images/3-70962-C-4.png,data/raw/esc50/audio/3-70962-C-4.wav,frog,4,processed
