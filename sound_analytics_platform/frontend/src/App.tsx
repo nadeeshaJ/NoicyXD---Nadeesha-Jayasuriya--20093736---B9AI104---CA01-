@@ -1,29 +1,22 @@
 import {
-  BarChart3,
   BrainCircuit,
+  ClipboardList,
   Database,
   FolderOpen,
-  GitBranch,
-  History,
   Monitor,
   Radar,
-  Route,
-  Sparkles,
   Waves,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { AnalysisResults } from "./components/AnalysisResults";
-import { AnalyticsDashboardPanel } from "./components/AnalyticsDashboardPanel";
 import { AudioInputPanel } from "./components/AudioInputPanel";
 import { AudioPreviewPanel } from "./components/AudioPreviewPanel";
 import { DatasetsPanel } from "./components/DatasetsPanel";
 import { AppHelpBanner } from "./components/AppHelpBanner";
 import { ModelsPanel } from "./components/ModelsPanel";
-import { ShowcasePanel } from "./components/ShowcasePanel";
 import { ModelComparisonPanel } from "./components/ModelComparisonPanel";
-import { PredictionHistoryPanel } from "./components/PredictionHistoryPanel";
-import { RouterLabPanel, type RouterLabContext } from "./components/RouterLabPanel";
-import { SessionTimelinePanel } from "./components/SessionTimelinePanel";
+import { SessionAuditPanel } from "./components/SessionAuditPanel";
+import { type RouterLabContext } from "./components/RouterLabPanel";
 import {
   checkHealth,
   compareModels,
@@ -46,7 +39,7 @@ import { type ReportAudioSource } from "./components/PlaySoundButton";
 
 import { fetchBenchmarksFromSupabase, supabaseConfigured } from "./lib/supabase";
 
-type Tab = "analyze" | "datasets" | "showcase" | "timeline" | "analytics" | "history" | "router" | "models";
+type Tab = "analyze" | "datasets" | "session" | "models";
 
 const modeOptions: Array<{ id: ProcessingMode; label: string }> = [
   { id: "urban", label: "Urban Sound" },
@@ -84,7 +77,7 @@ export default function App() {
   const [modelName, setModelName] = useState("mobilenetv2");
   const [gradcam, setGradcam] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [datasetLoadingAction, setDatasetLoadingAction] = useState<"analyze" | "compare" | null>(null);
+  const [datasetLoadingAction, setDatasetLoadingAction] = useState<"analyze" | "compare" | "showcase" | null>(null);
   const [datasetsDomain, setDatasetsDomain] = useState<"urban" | "animal">("urban");
   const [previewLoading, setPreviewLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -170,7 +163,7 @@ export default function App() {
     setDatasetsDomain(domain);
   }, []);
 
-  const handleDatasetLoading = useCallback((isLoading: boolean, action?: "analyze" | "compare") => {
+  const handleDatasetLoading = useCallback((isLoading: boolean, action?: "analyze" | "compare" | "showcase") => {
     setLoading(isLoading);
     setDatasetLoadingAction(isLoading ? (action ?? null) : null);
   }, []);
@@ -189,15 +182,15 @@ export default function App() {
           submessage: "Running inference across MobileNetV2, ResNet50, and Custom CNN",
         };
       }
+      if (datasetLoadingAction === "showcase") {
+        return {
+          message: "Running demo scenario...",
+          submessage: "Inference on curated test clip",
+        };
+      }
       return {
         message: "Analyzing dataset sample...",
         submessage: "Applying Short-Time Fourier Transform & CNN Inference",
-      };
-    }
-    if (tab === "showcase" && loading) {
-      return {
-        message: "Running showcase scenario...",
-        submessage: "Inference on curated test clip",
       };
     }
     return {
@@ -313,11 +306,7 @@ export default function App() {
               {[
                 { id: "analyze", label: "Analyze Live", icon: Radar },
                 { id: "datasets", label: "Project Datasets", icon: FolderOpen },
-                { id: "showcase", label: "Showcase", icon: Sparkles },
-                { id: "timeline", label: "Session Timeline", icon: GitBranch },
-                { id: "analytics", label: "Analytics Dashboard", icon: BarChart3 },
-                { id: "history", label: "Prediction History", icon: History },
-                { id: "router", label: "Router Lab", icon: Route },
+                { id: "session", label: "Session & Audit", icon: ClipboardList },
                 { id: "models", label: "CNN Models", icon: BrainCircuit },
               ].map(({ id, label, icon: Icon }) => (
                 <button
@@ -527,49 +516,14 @@ export default function App() {
             </div>
           ) : null}
 
-          {tab === "showcase" ? (
-            <div className={loading ? "hidden" : undefined}>
-              <ShowcasePanel
-                gradcam={gradcam}
-                disabled={loading}
-                onResult={(payload, sample) => {
-                  setResult(payload);
-                  setAnalysisAudio(null);
-                  const domain = (sample?.domain as "urban" | "animal") ?? null;
-                  setResultDatasetDomain(domain);
-                  setDatasetReportAudio(domain, payload.sample_id ?? sample?.sample_id);
-                  syncRouterLabContext(payload, null, domain);
-                  setComparison(null);
-                  setError(null);
-                }}
-                onLoading={setLoading}
-                onError={setError}
-              />
-            </div>
-          ) : null}
-
-          {tab === "timeline" ? (
-            <SessionTimelinePanel
-              active={tab === "timeline"}
+          {tab === "session" ? (
+            <SessionAuditPanel
+              active={tab === "session"}
               refreshKey={result?.saved_prediction_id}
-            />
-          ) : null}
-
-          {tab === "analytics" ? <AnalyticsDashboardPanel /> : null}
-
-          {tab === "history" ? (
-            <PredictionHistoryPanel
-              active={tab === "history"}
-              refreshKey={result?.saved_prediction_id}
-            />
-          ) : null}
-
-          {tab === "router" ? (
-            <RouterLabPanel
-              context={routerLabContext}
+              routerContext={routerLabContext}
               modelName={modelName}
               gradcam={gradcam}
-              onOpenResult={(payload) => {
+              onOpenRouterResult={(payload) => {
                 setResult(payload);
                 setComparison(null);
                 const domain =

@@ -73,7 +73,7 @@ class GradCAM:
 def get_gradcam_target_layer(model: nn.Module, model_name: str) -> nn.Module:
     name = model_name.lower()
     if name == "custom_cnn":
-        return model.features[12]   # last conv layer before final MaxPool
+        return model.features[11]  # final MaxPool2d in feature extractor (128 ch, 14×14)
     if name == "resnet50":
         return model.layer4[-1]     # deepest residual block
     if name == "mobilenetv2":

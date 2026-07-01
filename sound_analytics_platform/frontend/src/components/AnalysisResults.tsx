@@ -36,7 +36,8 @@ function buildAudioSource(result: PredictResult, audioSource?: ReportAudioSource
 }
 
 export function AnalysisResults({ result, benchmarks, modelName, audioSource }: Props) {
-  const activeBenchmark = benchmarks.find((row) => row.model_key === (result.model_key ?? modelName));
+  const usedModelKey = result.model_key ?? modelName;
+  const activeBenchmark = benchmarks.find((row) => row.model_key === usedModelKey);
   const assessment = result.assessment;
   const playback = buildAudioSource(result, audioSource);
 
@@ -123,20 +124,24 @@ export function AnalysisResults({ result, benchmarks, modelName, audioSource }: 
             <h3 className="text-sm font-bold uppercase tracking-wider text-white">Efficiency vs Accuracy Trade-off</h3>
           </div>
           <div className="grid gap-4 lg:grid-cols-3">
-            {benchmarks.slice(0, 3).map((row) => (
+            {benchmarks.slice(0, 3).map((row) => {
+              const isUsedInRun = row.model_key === usedModelKey;
+              return (
               <div 
                 key={row.model_key} 
                 className={`rounded-2xl border p-4 transition duration-300 ${
-                  row.is_deployed 
+                  isUsedInRun
                     ? "border-accent/30 bg-accent/[0.02] hover:bg-accent/[0.04]" 
                     : "border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.02]"
                 }`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="font-bold text-white text-sm">{row.display_name}</div>
-                  {row.is_deployed && (
-                    <span className="rounded bg-accent/25 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-glow">Active</span>
-                  )}
+                  {isUsedInRun ? (
+                    <span className="rounded bg-accent/25 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-accent-glow">This run</span>
+                  ) : row.is_deployed ? (
+                    <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white/45">Deployed</span>
+                  ) : null}
                 </div>
                 <div className="space-y-1.5 text-xs text-white/55">
                   <div className="flex justify-between"><span>Accuracy:</span><span className="text-white font-semibold">{row.test_accuracy ? `${(row.test_accuracy * 100).toFixed(1)}%` : "—"}</span></div>
@@ -145,7 +150,8 @@ export function AnalysisResults({ result, benchmarks, modelName, audioSource }: 
                   <div className="flex justify-between"><span>Size:</span><span className="text-white font-mono">{row.model_file_size_mb} MB</span></div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         </section>
       ) : null}

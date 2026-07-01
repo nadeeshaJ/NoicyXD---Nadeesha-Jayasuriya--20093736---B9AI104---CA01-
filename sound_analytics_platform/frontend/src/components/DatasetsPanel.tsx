@@ -1,8 +1,7 @@
-import { Database, Play, Sparkles, BarChart, HardDrive, Volume2, Square } from "lucide-react";
+import { Database, BarChart, HardDrive, Volume2, Square } from "lucide-react";
 import { useEffect, useState } from "react";
 import {
   compareSampleModels,
-  fetchCuratedSamples,
   fetchDatasetOverview,
   fetchDatasetSamples,
   predictFromSample,
@@ -13,7 +12,9 @@ import {
   API_BASE,
 } from "../lib/api";
 
-type DatasetLoadingAction = "analyze" | "compare";
+import { CuratedDemoPanel } from "./CuratedDemoPanel";
+
+type DatasetLoadingAction = "analyze" | "compare" | "showcase";
 
 type Props = {
   modelName: string;
@@ -47,7 +48,6 @@ export function DatasetsPanel({
     onDomainChange(domain);
   }, [domain, onDomainChange]);
   const [labelFilter, setLabelFilter] = useState("");
-  const [curated, setCurated] = useState<DatasetSample[]>([]);
   const [samples, setSamples] = useState<DatasetSample[]>([]);
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export function DatasetsPanel({
   }, []);
 
   useEffect(() => {
-    fetchCuratedSamples(domain).then(setCurated).catch(() => setCurated([]));
     fetchDatasetSamples(domain, labelFilter || undefined).then(setSamples).catch(() => setSamples([]));
   }, [domain, labelFilter]);
 
@@ -188,6 +187,16 @@ export function DatasetsPanel({
         </div>
       </section>
 
+      <CuratedDemoPanel
+        modelName={modelName}
+        gradcam={gradcam}
+        disabled={disabled}
+        onResult={onResult}
+        onComparison={onComparison}
+        onLoading={onLoading}
+        onError={onError}
+      />
+
       {activeOverview ? (
         <section className="glass-panel p-6">
           <h3 className="mb-3.5 text-xs font-bold uppercase tracking-wider text-white/60">Class Distribution Filter</h3>
@@ -212,59 +221,6 @@ export function DatasetsPanel({
           </div>
         </section>
       ) : null}
-
-      <section className="glass-panel p-6">
-        <div className="mb-5 flex items-center gap-2.5">
-          <Sparkles size={16} className="text-accent-soft" />
-          <h3 className="text-sm font-bold uppercase tracking-wider text-white">Recommended Demo Samples</h3>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {curated.map((sample) => (
-            <div key={sample.sample_id} className="rounded-2xl border border-white/[0.05] bg-white/[0.01] p-5 flex flex-col justify-between hover:border-white/[0.08] transition">
-              <div>
-                <div className="font-bold text-white text-base tracking-tight mb-1">{formatLabel(sample.label)}</div>
-                <div className="text-[10px] font-mono text-white/40 mb-3 truncate">{sample.filename}</div>
-                <p className="text-xs text-white/60 leading-relaxed font-medium">{sample.note}</p>
-              </div>
-              <div className="mt-5 flex gap-2.5 justify-between items-center">
-                {/* Listen Button (Icon Only) */}
-                <button 
-                  className={`p-2.5 rounded-xl border transition flex items-center justify-center shrink-0 ${
-                    playingId === sample.sample_id 
-                      ? "bg-status-success/20 border-status-success/40 text-status-success shadow-glow animate-pulse" 
-                      : "bg-white/[0.03] border-white/[0.05] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10"
-                  }`}
-                  onClick={() => togglePlaySample(sample)}
-                  disabled={disabled}
-                  title={playingId === sample.sample_id ? "Stop audio" : "Listen to audio"}
-                >
-                  {playingId === sample.sample_id ? <Square size={14} className="fill-current" /> : <Volume2 size={14} />}
-                </button>
-
-                {/* Analyze Button */}
-                <button 
-                  className="btn-primary flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5" 
-                  onClick={() => analyzeSample(sample)}
-                  disabled={disabled}
-                >
-                  <Play size={11} className="fill-current" />
-                  Analyze
-                </button>
-
-                {/* Compare Button (Icon Only) */}
-                <button 
-                  className="p-2.5 rounded-xl border border-white/[0.05] bg-white/[0.03] text-white/60 hover:text-white hover:bg-white/[0.06] hover:border-white/10 transition flex items-center justify-center shrink-0" 
-                  onClick={() => compareSample(sample)}
-                  disabled={disabled}
-                  title="Compare across all models"
-                >
-                  <BarChart size={14} />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
 
       <section className="glass-panel p-6">
         <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">Browse Test Split Table</h3>

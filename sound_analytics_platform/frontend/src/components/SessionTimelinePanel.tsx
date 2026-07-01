@@ -35,9 +35,18 @@ function downloadBlob(blob: Blob, filename: string) {
 type Props = {
   active?: boolean;
   refreshKey?: string | null;
+  embedded?: boolean;
+  skipMetrics?: boolean;
+  onAutoRowClick?: (row: PredictionHistoryRow) => void;
 };
 
-export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
+export function SessionTimelinePanel({
+  active = true,
+  refreshKey,
+  embedded = false,
+  skipMetrics = false,
+  onAutoRowClick,
+}: Props) {
   const [rows, setRows] = useState<PredictionHistoryRow[]>([]);
   const [metrics, setMetrics] = useState<AnalyticsDashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,34 +103,39 @@ export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
     );
   }
 
+  const isAutoRow = (row: PredictionHistoryRow) =>
+    row.processing_mode === "auto" || Boolean(row.routed_domain);
+
   return (
-    <div className="space-y-6">
-      <div className="glass-panel p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-cyanGradient pointer-events-none z-0" />
-        <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-accent/10 p-2 text-accent-soft border border-accent/20">
-              <GitBranch size={18} />
+    <div className={embedded ? undefined : "space-y-6"}>
+      {!embedded ? (
+        <div className="glass-panel p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-cyanGradient pointer-events-none z-0" />
+          <div className="relative z-10 flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-accent/10 p-2 text-accent-soft border border-accent/20">
+                <GitBranch size={18} />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">Session Story Timeline</h2>
+                <p className="text-xs text-white/50 mt-0.5">
+                  Session <span className="font-mono text-white/70">{shortSession}</span> · {rows.length} logged predictions
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">Session Story Timeline</h2>
-              <p className="text-xs text-white/50 mt-0.5">
-                Session <span className="font-mono text-white/70">{shortSession}</span> · {rows.length} logged predictions
-              </p>
+            <div className="flex flex-wrap gap-2">
+              <button className="btn-secondary py-2 text-xs" onClick={load} disabled={exporting}>
+                <RefreshCw size={13} className="mr-1.5 inline" />
+                Refresh
+              </button>
+              <button className="btn-primary py-2 text-xs" onClick={handleExport} disabled={exporting}>
+                <Download size={13} className="mr-1.5 inline" />
+                {exporting ? "Exporting…" : "Export session ZIP"}
+              </button>
             </div>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <button className="btn-secondary py-2 text-xs" onClick={load} disabled={exporting}>
-              <RefreshCw size={13} className="mr-1.5 inline" />
-              Refresh
-            </button>
-            <button className="btn-primary py-2 text-xs" onClick={handleExport} disabled={exporting}>
-              <Download size={13} className="mr-1.5 inline" />
-              {exporting ? "Exporting…" : "Export session ZIP"}
-            </button>
           </div>
         </div>
-      </div>
+      ) : null}
 
       {error ? (
         <div className="glass-panel border-status-error/30 bg-status-error/5 p-5 text-status-error text-sm font-medium flex items-center gap-3">
@@ -130,7 +144,7 @@ export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
         </div>
       ) : null}
 
-      {metrics ? (
+      {metrics && !skipMetrics ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <MetricCard label="Total predictions" value={String(metrics.total_predictions)} hint="This session" />
           <MetricCard
@@ -149,7 +163,7 @@ export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
 
       {rows.length === 0 ? (
         <div className="glass-panel p-12 text-center text-white/40 text-sm">
-          No predictions logged yet. Run Analyze Live, Datasets, or Showcase to build your session story.
+          No predictions logged yet. Run Analyze Live or Project Datasets to build your session story.
         </div>
       ) : (
         <div className="glass-panel p-6">
@@ -158,7 +172,24 @@ export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
             {rows.map((row) => (
               <li key={row.id} className="relative pl-6">
                 <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-accent shadow-glow border-2 border-brand-dark" />
-                <div className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4 hover:border-white/[0.08] transition">
+                <div
+                  className={`rounded-xl border border-white/[0.05] bg-white/[0.02] p-4 hover:border-white/[0.08] transition ${
+                    isAutoRow(row) && onAutoRowClick ? "cursor-pointer" : ""
+                  }`}
+                  onClick={isAutoRow(row) && onAutoRowClick ? () => onAutoRowClick(row) : undefined}
+                  onKeyDown={
+                    isAutoRow(row) && onAutoRowClick
+                      ? (event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            onAutoRowClick(row);
+                          }
+                        }
+                      : undefined
+                  }
+                  role={isAutoRow(row) && onAutoRowClick ? "button" : undefined}
+                  tabIndex={isAutoRow(row) && onAutoRowClick ? 0 : undefined}
+                >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <div className="text-sm font-semibold text-white">
@@ -183,6 +214,9 @@ export function SessionTimelinePanel({ active = true, refreshKey }: Props) {
                     <span>Source: {row.input_source}</span>
                     {row.inference_ms != null ? <span>{row.inference_ms.toFixed(0)} ms</span> : null}
                     {row.reliability_level ? <span>Reliability: {row.reliability_level}</span> : null}
+                    {isAutoRow(row) && onAutoRowClick ? (
+                      <span className="text-cyan-glow/80">Click for router details →</span>
+                    ) : null}
                   </div>
                 </div>
               </li>

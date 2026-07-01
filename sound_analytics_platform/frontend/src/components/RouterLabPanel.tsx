@@ -27,21 +27,23 @@ type Props = {
   context: RouterLabContext | null;
   modelName: string;
   gradcam: boolean;
+  embedded?: boolean;
   onOpenResult?: (result: PredictResult) => void;
 };
 
-export function RouterLabPanel({ context, modelName, gradcam, onOpenResult }: Props) {
+export function RouterLabPanel({ context, modelName, gradcam, embedded = false, onOpenResult }: Props) {
   const [whatIf, setWhatIf] = useState<Partial<Record<WhatIfKey, PredictResult>>>({});
   const [loadingMode, setLoadingMode] = useState<WhatIfKey | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   if (!context?.result.router) {
+    if (embedded) return null;
     return (
       <div className="glass-panel p-12 text-center text-white/40 text-sm flex flex-col items-center gap-3">
         <Route size={36} className="text-white/20" />
         <p>
-          Run a prediction with <span className="text-white/70 font-medium">Smart Auto-Router</span> on Analyze Live,
-          Datasets, or Showcase. The last auto-routed clip appears here for transparency and what-if comparisons.
+          Run a prediction with <span className="text-white/70 font-medium">Smart Auto-Router</span> on Analyze Live
+          or Project Datasets. The last auto-routed clip appears here for transparency and what-if comparisons.
         </p>
       </div>
     );

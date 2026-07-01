@@ -34,6 +34,8 @@ type AuditFilter = "all" | "auditable" | "correct" | "mismatch";
 type Props = {
   active?: boolean;
   refreshKey?: string | null;
+  embedded?: boolean;
+  onAutoRowClick?: (row: PredictionHistoryRow) => void;
 };
 
 function filterRows(rows: PredictionHistoryRow[], filter: AuditFilter): PredictionHistoryRow[] {
@@ -43,7 +45,12 @@ function filterRows(rows: PredictionHistoryRow[], filter: AuditFilter): Predicti
   return rows.filter((row) => hasGroundTruth(row) && row.audit_match === false);
 }
 
-export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
+export function PredictionHistoryPanel({
+  active = true,
+  refreshKey,
+  embedded = false,
+  onAutoRowClick,
+}: Props) {
   const [rows, setRows] = useState<PredictionHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -110,27 +117,44 @@ export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
     );
   }
 
+  const isAutoRow = (row: PredictionHistoryRow) =>
+    row.processing_mode === "auto" || Boolean(row.routed_domain);
+
   return (
-    <section className="glass-panel p-6">
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-white">Prediction History Logs</h2>
-          <p className="text-xs text-white/50 mt-1">
-            Saved inferences for this browser session, newest first.
-            {auditableRows.length > 0 ? (
-              <>
-                {" "}
-                Dataset audits: {correctCount} correct · {mismatchCount}{" "}
-                {mismatchCount === 1 ? "mismatch" : "mismatches"}.
-              </>
-            ) : null}
-          </p>
+    <section className={embedded ? undefined : "glass-panel p-6"}>
+      <div className={embedded ? "glass-panel p-6" : undefined}>
+      {!embedded ? (
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-white">Prediction History Logs</h2>
+            <p className="text-xs text-white/50 mt-1">
+              Saved inferences for this browser session, newest first.
+              {auditableRows.length > 0 ? (
+                <>
+                  {" "}
+                  Dataset audits: {correctCount} correct · {mismatchCount}{" "}
+                  {mismatchCount === 1 ? "mismatch" : "mismatches"}.
+                </>
+              ) : null}
+            </p>
+          </div>
+          <button className="btn-secondary py-2 text-xs shrink-0" onClick={load} disabled={loading}>
+            <RefreshCw size={13} className="mr-1.5 inline" />
+            Refresh Logs
+          </button>
         </div>
-        <button className="btn-secondary py-2 text-xs shrink-0" onClick={load} disabled={loading}>
-          <RefreshCw size={13} className="mr-1.5 inline" />
-          Refresh Logs
-        </button>
-      </div>
+      ) : (
+        <p className="text-xs text-white/50 mb-4">
+          Saved inferences for this browser session, newest first.
+          {auditableRows.length > 0 ? (
+            <>
+              {" "}
+              Dataset audits: {correctCount} correct · {mismatchCount}{" "}
+              {mismatchCount === 1 ? "mismatch" : "mismatches"}.
+            </>
+          ) : null}
+        </p>
+      )}
 
       {rows.length > 0 ? (
         <div className="mb-5 flex flex-wrap gap-2">
@@ -162,7 +186,7 @@ export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
           <p className="text-white/40 text-sm">No predictions stored yet in this session.</p>
           <p className="text-xs text-white/35 max-w-md leading-relaxed">
             Run <span className="text-white/55">Analyze Live</span> or analyze a sample under
-            {" "}<span className="text-white/55">Project Datasets</span> / <span className="text-white/55">Showcase</span>.
+            {" "}<span className="text-white/55">Project Datasets</span>.
             Dataset runs include ground-truth auditing here.
           </p>
         </div>
@@ -189,6 +213,7 @@ export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
                 <th className="px-4 py-3">Confidence</th>
                 <th className="px-4 py-3">Reliability</th>
                 <th className="px-4 py-3 text-right">Inference</th>
+                {onAutoRowClick ? <th className="px-4 py-3 text-right">Router</th> : null}
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.05]">
@@ -241,6 +266,21 @@ export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
                     <td className="px-4 py-4 whitespace-nowrap text-right text-xs font-mono text-white/50">
                       {row.inference_ms ? `${Number(row.inference_ms).toFixed(1)} ms` : "—"}
                     </td>
+                    {onAutoRowClick ? (
+                      <td className="px-4 py-4 whitespace-nowrap text-right text-xs">
+                        {isAutoRow(row) ? (
+                          <button
+                            type="button"
+                            className="text-cyan-glow/80 hover:text-cyan-glow transition"
+                            onClick={() => onAutoRowClick(row)}
+                          >
+                            View →
+                          </button>
+                        ) : (
+                          <span className="text-white/20">—</span>
+                        )}
+                      </td>
+                    ) : null}
                   </tr>
                 );
               })}
@@ -248,6 +288,7 @@ export function PredictionHistoryPanel({ active = true, refreshKey }: Props) {
           </table>
         </div>
       )}
+      </div>
     </section>
   );
 }

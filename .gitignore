@@ -38,6 +38,9 @@ sound_analytics_platform/**/__pycache__/
 # Local SQLite prediction log
 data/app_predictions.db
 
+# Server upload bundle (generate with scripts/package_server_data.py)
+deploy/server_data_raw.zip
+
 # Phase 9 — presentation & demo prep (regenerate locally; submit via Moodle separately)
 # Primary outputs: ../Presentation/ (outside this repo)
 scripts/generate_phase9_presentation.py

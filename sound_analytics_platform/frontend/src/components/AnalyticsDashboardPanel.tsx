@@ -72,7 +72,15 @@ function DistributionChart({
   );
 }
 
-export function AnalyticsDashboardPanel() {
+export function AnalyticsDashboardPanel({
+  active = true,
+  refreshKey,
+  embedded = false,
+}: {
+  active?: boolean;
+  refreshKey?: string | null;
+  embedded?: boolean;
+}) {
   const [data, setData] = useState<AnalyticsDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -91,8 +99,10 @@ export function AnalyticsDashboardPanel() {
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    if (active) {
+      void load();
+    }
+  }, [active, refreshKey]);
 
   if (loading) {
     return (
@@ -155,16 +165,22 @@ export function AnalyticsDashboardPanel() {
       <section className="glass-panel p-6 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-80 h-full bg-glowGradient pointer-events-none z-0" />
         
-        <div className="mb-6 flex items-center justify-between relative z-10">
-          <div>
-            <h2 className="text-xl font-bold text-white tracking-tight">Telemetry Operational Dashboard</h2>
-            <p className="text-xs text-white/50 leading-relaxed">Live MLOps telemetry aggregated from prediction logs for this browser session.</p>
+        {!embedded ? (
+          <div className="mb-6 flex items-center justify-between relative z-10">
+            <div>
+              <h2 className="text-xl font-bold text-white tracking-tight">Telemetry Operational Dashboard</h2>
+              <p className="text-xs text-white/50 leading-relaxed">Live MLOps telemetry aggregated from prediction logs for this browser session.</p>
+            </div>
+            <button className="btn-secondary py-2 text-xs" onClick={load} disabled={loading}>
+              <RefreshCw size={13} className="mr-1.5" />
+              Sync Logs
+            </button>
           </div>
-          <button className="btn-secondary py-2 text-xs" onClick={load} disabled={loading}>
-            <RefreshCw size={13} className="mr-1.5" />
-            Sync Logs
-          </button>
-        </div>
+        ) : (
+          <div className="mb-6 relative z-10">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-white/60">Session charts</h3>
+          </div>
+        )}
 
         <div className="grid gap-4 md:grid-cols-3 relative z-10">
           <MetricCard label="Session Predictions" value={data.total_predictions} hint="Total logged events" accent />
